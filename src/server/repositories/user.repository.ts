@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/prisma";
 import { wp_usermeta } from "@prisma/client";
 
 export class UserRepository {
@@ -31,10 +32,32 @@ export class UserRepository {
     );
     if (!capMeta?.meta_value) return false;
 
-    // Check if capability is present with boolean true in serialized format
     return (
       capMeta.meta_value.includes(`"${capability}";b:1`) ||
       capMeta.meta_value.includes(`"${capability}";s:1:"1"`)
     );
+  }
+
+  /**
+   * List all users with their roles and capabilities for Admin management.
+   */
+  static async findMany() {
+    const users = await prisma.wp_users.findMany({
+      orderBy: { ID: "desc" },
+      take: 100,
+      include: {
+        usermeta: true,
+      },
+    });
+
+    return users.map((u) => ({
+      id: u.ID.toString(),
+      username: u.user_login,
+      displayName: u.display_name || u.user_nicename || u.user_login,
+      email: u.user_email,
+      registered: u.user_registered,
+      role: this.extractRoleFromMeta(u.usermeta),
+      canShareProfile: this.hasCapability(u.usermeta, "share_zpp_profile"),
+    }));
   }
 }

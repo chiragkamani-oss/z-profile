@@ -1,0 +1,42 @@
+replicaCount: 2
+
+image:
+  repository: registry.gitlab.zymrinc.com/projz/zprofile-node
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets:
+  - name: gitlab-registry-secret
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: zprofile.zymrinc.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: zprofile-tls-cert
+      hosts:
+        - zprofile.zymrinc.com
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1024Mi
+  requests:
+    cpu: 250m
+    memory: 512Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

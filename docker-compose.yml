@@ -1,0 +1,52 @@
+version: "3.8"
+
+services:
+  zprofile-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zprofile-node-app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=mysql://root:rootpassword@zprofile-db:3306/zprofile
+      - NEXTAUTH_SECRET=zymr-zprofile-secure-auth-secret-key-32chars
+      - NEXTAUTH_URL=http://localhost:3000
+    depends_on:
+      zprofile-db:
+        condition: service_healthy
+    networks:
+      - zprofile-net
+
+  zprofile-db:
+    image: mariadb:10.5
+    container_name: zprofile-mariadb
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_DATABASE=zprofile
+      - MYSQL_USER=zprofile_user
+      - MYSQL_PASSWORD=zprofile_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - zprofile-db-data:/var/lib/mysql
+    networks:
+      - zprofile-net
+    healthcheck:
+      test:
+        ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  zprofile-db-data:
+
+networks:
+  zprofile-net:
+    driver: bridge

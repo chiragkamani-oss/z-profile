@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: zprofile-node-service
+  namespace: zymr-zprofile-prod
+  labels:
+    app: zprofile-node
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 3000
+      protocol: TCP
+      name: http
+  selector:
+    app: zprofile-node
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: zprofile-node-ingress
+  namespace: zymr-zprofile-prod
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-body-size: "20m"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  tls:
+    - hosts:
+        - zprofile.zymrinc.com
+      secretName: zprofile-tls-cert
+  rules:
+    - host: zprofile.zymrinc.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: zprofile-node-service
+                port:
+                  number: 80
