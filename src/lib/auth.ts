@@ -15,6 +15,92 @@ export const authOptions: NextAuthOptions = {
     error: "/login",
   },
   providers: [
+    CredentialsProvider({
+      id: "google-token",
+      name: "Google One-Tap SSO",
+      credentials: {
+        credential: { label: "Google Credential", type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.credential) {
+          return null;
+        }
+
+        try {
+          const res = await fetch(
+            `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credentials.credential)}`
+          );
+          if (!res.ok) {
+            return null;
+          }
+          const payload = await res.json();
+          const expectedAud =
+            process.env.GOOGLE_CLIENT_ID ||
+            process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+            "140409062196-nrqjm53c68gjcrl496gp8lmui1jjaldf.apps.googleusercontent.com";
+
+          if (payload.aud !== expectedAud) {
+            return null;
+          }
+          if (!payload.email || payload.email_verified !== "true") {
+            return null;
+          }
+
+          // Lookup or auto-provision WordPress user
+          let wpUser = await prisma.wp_users.findFirst({
+            where: { user_email: payload.email },
+            include: { usermeta: true },
+          });
+
+          if (!wpUser) {
+            const emailPrefix = payload.email
+              .split("@")[0]
+              .replace(/[^a-zA-Z0-9._-]/g, "");
+            const userLogin = `${emailPrefix}_${Date.now().toString().slice(-4)}`;
+            wpUser = await prisma.wp_users.create({
+              data: {
+                user_login: userLogin,
+                user_pass: "",
+                user_nicename: payload.name || userLogin,
+                user_email: payload.email,
+                user_url: "",
+                user_registered: new Date(),
+                display_name: payload.name || emailPrefix,
+                usermeta: {
+                  create: [
+                    {
+                      meta_key: "wp_capabilities",
+                      meta_value: 'a:1:{s:8:"engineer";b:1;}',
+                    },
+                    {
+                      meta_key: "wp_user_level",
+                      meta_value: "1",
+                    },
+                  ],
+                },
+              },
+              include: { usermeta: true },
+            });
+          }
+
+          const role = UserRepository.extractRoleFromMeta(wpUser.usermeta);
+          const canShareProfile = UserRepository.hasCapability(
+            wpUser.usermeta,
+            "share_zpp_profile"
+          );
+
+          return {
+            id: wpUser.ID.toString(),
+            name: wpUser.display_name || payload.name || payload.email,
+            email: wpUser.user_email,
+            role,
+            canShareProfile,
+          };
+        } catch {
+          return null;
+        }
+      },
+    }),
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
       ? [
           GoogleProvider({
@@ -32,6 +118,7 @@ export const authOptions: NextAuthOptions = {
           }),
         ]),
     CredentialsProvider({
+      id: "credentials",
       name: "WordPress Credentials",
       credentials: {
         username: { label: "Username or Email", type: "text" },

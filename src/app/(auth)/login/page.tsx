@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
+import Script from "next/script";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -56,14 +57,79 @@ function LoginForm() {
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [gsiReady, setGsiReady] = useState(false);
+
+  const handleCredentialResponse = async (response: any) => {
+    if (!response?.credential) return;
+    setIsGoogleLoading(true);
+    setError("");
+    try {
+      const res = await signIn("google-token", {
+        credential: response.credential,
+        redirect: false,
+      });
+
+      if (res?.error) {
+        setError("Google authentication failed. Please verify your account access.");
+      } else {
+        router.push("/dashboard");
+        router.refresh();
+      }
+    } catch {
+      setError("An unexpected error occurred during Google sign in.");
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
+  const initGoogleGsi = () => {
+    if (typeof window === "undefined" || !(window as any).google?.accounts?.id) return;
+    const clientId =
+      process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+      "140409062196-nrqjm53c68gjcrl496gp8lmui1jjaldf.apps.googleusercontent.com";
+
+    try {
+      (window as any).google.accounts.id.initialize({
+        client_id: clientId,
+        callback: handleCredentialResponse,
+        auto_select: false,
+      });
+
+      const container = document.getElementById("google-gsi-btn");
+      if (container) {
+        container.innerHTML = "";
+        (window as any).google.accounts.id.renderButton(container, {
+          type: "standard",
+          theme: "outline",
+          size: "large",
+          width: 384,
+          text: "signin_with",
+          shape: "rectangular",
+          logo_alignment: "left",
+        });
+        setGsiReady(true);
+      }
+    } catch {
+      // GSI initialization fallback
+    }
+  };
+
+  useEffect(() => {
+    initGoogleGsi();
+  }, []);
 
   const handleGoogleSignIn = async () => {
     setError("");
     setIsGoogleLoading(true);
     try {
-      await signIn("google", { callbackUrl: "/dashboard" });
+      if ((window as any).google?.accounts?.id) {
+        (window as any).google.accounts.id.prompt();
+      } else {
+        await signIn("google", { callbackUrl: "/dashboard" });
+      }
     } catch {
       setError("Unable to initiate Google sign in. Please try again.");
+    } finally {
       setIsGoogleLoading(false);
     }
   };
@@ -94,95 +160,112 @@ function LoginForm() {
   };
 
   return (
-    <Card className="w-full max-w-md border-border bg-card/95 shadow-xl backdrop-blur-xl">
-      <CardHeader className="space-y-1 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20">
-          <Shield className="h-6 w-6" />
-        </div>
-        <CardTitle className="text-2xl font-bold tracking-tight">
-          Zprofile Sign In
-        </CardTitle>
-        <CardDescription>
-          Sign in with your enterprise Google account or credentials
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {error && (
-          <div className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-            <AlertCircle className="h-4 w-4 shrink-0" />
-            <span>{error}</span>
+    <>
+      <Script
+        src="https://accounts.google.com/gsi/client"
+        strategy="afterInteractive"
+        onLoad={initGoogleGsi}
+      />
+      <Card className="w-full max-w-md border-border bg-card/95 shadow-xl backdrop-blur-xl">
+        <CardHeader className="space-y-1 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20">
+            <Shield className="h-6 w-6" />
           </div>
-        )}
-
-        {/* Credentials Form First */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="username">Username or Email</Label>
-            <Input
-              id="username"
-              type="text"
-              required
-              placeholder="firstname.lastname@zymr.com"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              disabled={isLoading || isGoogleLoading}
-            />
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
+          <CardTitle className="text-2xl font-bold tracking-tight">
+            Zprofile Sign In
+          </CardTitle>
+          <CardDescription>
+            Sign in with your enterprise Google account or credentials
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {error && (
+            <div className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{error}</span>
             </div>
-            <Input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={isLoading || isGoogleLoading}
-            />
-          </div>
-          <Button
-            className="h-11 w-full rounded-xl font-semibold shadow-xs"
-            type="submit"
-            disabled={isLoading || isGoogleLoading}
-          >
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Sign In with Password
-          </Button>
-        </form>
-
-        {/* Divider */}
-        <div className="relative my-4">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-border/80" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-3 text-[11px] font-semibold tracking-wider text-muted-foreground">
-              or continue with
-            </span>
-          </div>
-        </div>
-
-        {/* Google SSO Button at Bottom */}
-        <Button
-          type="button"
-          variant="outline"
-          className="relative flex h-11 w-full items-center justify-center gap-3 rounded-xl border-border bg-card font-semibold text-foreground shadow-xs transition-all hover:bg-muted/80"
-          onClick={handleGoogleSignIn}
-          disabled={isGoogleLoading || isLoading}
-        >
-          {isGoogleLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-          ) : (
-            <GoogleIcon />
           )}
-          <span>Sign in with Google</span>
-        </Button>
-      </CardContent>
-      <CardFooter className="flex justify-center border-t border-border/40 py-4 text-xs text-muted-foreground">
-        Zprofile Enterprise Talent Management Platform
-      </CardFooter>
-    </Card>
+
+          {/* Credentials Form First */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="username">Username or Email</Label>
+              <Input
+                id="username"
+                type="text"
+                required
+                placeholder="firstname.lastname@zymr.com"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                disabled={isLoading || isGoogleLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+              </div>
+              <Input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading || isGoogleLoading}
+              />
+            </div>
+            <Button
+              className="h-11 w-full rounded-xl font-semibold shadow-xs"
+              type="submit"
+              disabled={isLoading || isGoogleLoading}
+            >
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Sign In with Password
+            </Button>
+          </form>
+
+          {/* Divider */}
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border/80" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-3 text-[11px] font-semibold tracking-wider text-muted-foreground">
+                or continue with
+              </span>
+            </div>
+          </div>
+
+          {/* Google SSO Container (GSI JavaScript Origin Authentication) */}
+          <div className="relative flex min-h-[44px] w-full flex-col items-center justify-center">
+            {isGoogleLoading && (
+              <div className="backdrop-blur-xs absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-card/80">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              </div>
+            )}
+            <div
+              id="google-gsi-btn"
+              className="flex w-full justify-center overflow-hidden rounded-xl"
+            />
+            {/* Fallback button if GSI has not yet finished rendering */}
+            {!gsiReady && (
+              <Button
+                type="button"
+                variant="outline"
+                className="relative flex h-11 w-full items-center justify-center gap-3 rounded-xl border-border bg-card font-semibold text-foreground shadow-xs transition-all hover:bg-muted/80"
+                onClick={handleGoogleSignIn}
+                disabled={isGoogleLoading || isLoading}
+              >
+                <GoogleIcon />
+                <span>Sign in with Google</span>
+              </Button>
+            )}
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-center border-t border-border/40 py-4 text-xs text-muted-foreground">
+          Zprofile Enterprise Talent Management Platform
+        </CardFooter>
+      </Card>
+    </>
   );
 }
 
