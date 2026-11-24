@@ -140,7 +140,7 @@ export default function DashboardPage() {
                 <div className="text-2xl font-bold">{data?.totalProfiles ?? 0}</div>
                 <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
                   <TrendingUp className="h-3 w-3 text-emerald-500" />
-                  Synced from MySQL database
+                  Active engineering talent
                 </p>
               </>
             )}
@@ -400,8 +400,8 @@ export default function DashboardPage() {
                 <Cpu className="h-4 w-4 text-primary" />
                 Top Technical Competencies
               </span>
-              <Badge variant="secondary" className="text-xs">
-                From DB Meta
+              <Badge variant="secondary" className="text-xs font-medium">
+                Top Ranked
               </Badge>
             </CardTitle>
             <CardDescription>
@@ -415,7 +415,7 @@ export default function DashboardPage() {
               </div>
             ) : !data?.topSkills || data.topSkills.length === 0 ? (
               <p className="py-6 text-center text-sm text-muted-foreground">
-                No skill metadata recorded yet.
+                No skills recorded yet.
               </p>
             ) : (
               <div className="space-y-2.5">
@@ -471,7 +471,7 @@ export default function DashboardPage() {
             </div>
           ) : !data?.recentProfiles || data.recentProfiles.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              No profiles found in the database.
+              No talent profiles found.
             </p>
           ) : (
             <div className="divide-y divide-border">

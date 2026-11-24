@@ -74,8 +74,7 @@ export default function SettingsPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Admin & Role Management</h1>
         <p className="text-muted-foreground">
-          View all system users, security roles, and permissions mapped from MySQL
-          database.
+          View system users, access roles, and platform permissions.
         </p>
       </div>
 
@@ -99,7 +98,9 @@ export default function SettingsPage() {
             <Lock className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-sm font-semibold">WordPress phpass & bcrypt</div>
+            <div className="text-sm font-semibold">
+              Enterprise Password Hash Verification
+            </div>
             <p className="mt-1 text-xs text-muted-foreground">
               Constant-time hash comparison prevents timing side-channel attacks.
             </p>
@@ -113,9 +114,7 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{users.length || "--"}</div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Directly synced from wp_users
-            </p>
+            <p className="mt-1 text-xs text-muted-foreground">Active accounts</p>
           </CardContent>
         </Card>
       </div>
@@ -124,7 +123,7 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="text-lg">User Directory & Role Mapping</CardTitle>
           <CardDescription>
-            Lists accounts with their active capabilities from <code>wp_usermeta</code>.
+            Lists all registered accounts and assigned role privileges.
           </CardDescription>
         </CardHeader>
         <CardContent>
