@@ -42,10 +42,10 @@ export function Sidebar() {
   const handleMouseEnter = () => {
     if (!isCollapsed) return;
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
-    // Subtle 140ms intentional delay to prevent accidental flashes on pass-through
+    // Wait 0.5 seconds (500ms) before starting expansion
     hoverTimeoutRef.current = setTimeout(() => {
       setIsHovered(true);
-    }, 140);
+    }, 500);
   };
 
   const handleMouseLeave = () => {
