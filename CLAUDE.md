@@ -54,7 +54,12 @@ npm run prisma:pull            # Introspect/pull schema changes from existing My
 - **TTL Caching**: Cache expensive static or semi-static read queries (such as taxonomy configurations) using in-memory TTL cache (`src/lib/cache/ttl-cache.ts`) with $\mathcal{O}(1)$ lookups.
 - **Zero-Allocation Serialization**: Use single-pass recursive object visitor `serializeBigInt` (`src/lib/utils.ts`) instead of `JSON.parse(JSON.stringify())` to eliminate memory pressure and CPU overhead during BigInt transformation.
 
-### 5. UI & Validation Feedback Standard
+### 5. UI, Responsive Layout & Validation Feedback Standard
+- **Responsive Layout & Mobile-First Adaptation**:
+  - All views must seamlessly adapt from mobile ($375\text{px}$) to desktop ($1280\text{px}+$); avoid hardcoded widths that trigger horizontal scrolling.
+  - Tables must always be wrapped in an `overflow-x-auto` container with min-width constraints on the table element (`min-w-[640px]`).
+  - Use responsive dialog actions (`flex-col-reverse sm:flex-row sm:justify-end gap-2`).
+- **Semantic Design Tokens**: Never hardcode hex values or arbitrary colors. Always use theme variables (`bg-background`, `bg-card`, `text-foreground`, `border-border`, `bg-primary`, `bg-muted`) to ensure consistent dark and light mode rendering.
 - **Toast Notifications**: Every form submission handler MUST display `data.error?.message` in `toast.error()` on failure so validation constraints (e.g. username character rules, password minimums) are immediately visible.
 - **Inline Alert Banners**: In dialogs and complex forms, provide inline alert banners for errors (`<AlertCircle />` with clear message) so the user does not lose their form context.
 
