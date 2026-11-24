@@ -4,7 +4,13 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -23,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Building2, Plus, Globe, Loader2 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface ClientItem {
   ID: string;
@@ -40,7 +47,6 @@ export default function ClientsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
 
   const [name, setName] = useState("");
   const [industry, setIndustry] = useState("");
@@ -60,7 +66,7 @@ export default function ClientsPage() {
         setClients(data.data);
       }
     } catch {
-      // Network error
+      toast.error("Failed to load client accounts");
     } finally {
       setIsLoading(false);
     }
@@ -69,7 +75,6 @@ export default function ClientsPage() {
   const handleCreateClient = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setError("");
 
     try {
       const res = await fetch("/api/clients", {
@@ -84,6 +89,7 @@ export default function ClientsPage() {
       });
       const data = await res.json();
       if (data.success) {
+        toast.success(`Client account "${name}" created successfully!`);
         setDialogOpen(false);
         setName("");
         setIndustry("");
@@ -91,10 +97,10 @@ export default function ClientsPage() {
         setDescription("");
         fetchClients();
       } else {
-        setError(data.error?.message || "Failed to create client");
+        toast.error(data.error?.message || "Failed to create client");
       }
     } catch {
-      setError("Network error while creating client");
+      toast.error("Network error while creating client");
     } finally {
       setIsSubmitting(false);
     }
@@ -110,21 +116,24 @@ export default function ClientsPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Clients Directory</h1>
           <p className="text-muted-foreground">
-            Manage enterprise client accounts and assignments.
+            Manage enterprise client accounts and project assignments.
           </p>
         </div>
-        <Button className="gap-2" onClick={() => setDialogOpen(true)}>
+        <Button className="shadow-xs gap-2" onClick={() => setDialogOpen(true)}>
           <Plus className="h-4 w-4" />
           Add Client
         </Button>
       </div>
 
-      <Card>
+      <Card className="border border-border shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Building2 className="h-5 w-5 text-blue-600" />
-            Client Accounts
+            <Building2 className="h-5 w-5 text-primary" />
+            Active Client Accounts
           </CardTitle>
+          <CardDescription>
+            Accounts linked to engineer project portfolios and client aliases.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -141,7 +150,7 @@ export default function ClientsPage() {
               {isLoading ? (
                 <TableRow>
                   <TableCell colSpan={5} className="h-24 text-center">
-                    Loading clients...
+                    <Loader2 className="mx-auto h-5 w-5 animate-spin text-primary" />
                   </TableCell>
                 </TableRow>
               ) : clients.length === 0 ? (
@@ -157,7 +166,10 @@ export default function ClientsPage() {
                 clients.map((client) => {
                   const web = getMeta(client, "website");
                   return (
-                    <TableRow key={client.ID}>
+                    <TableRow
+                      key={client.ID}
+                      className="transition-colors hover:bg-muted/40"
+                    >
                       <TableCell className="font-semibold">{client.post_title}</TableCell>
                       <TableCell>{getMeta(client, "industry")}</TableCell>
                       <TableCell>
@@ -166,7 +178,7 @@ export default function ClientsPage() {
                             href={web}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
                           >
                             <Globe className="h-3 w-3" />
                             {web.replace(/^https?:\/\//, "")}
@@ -204,11 +216,6 @@ export default function ClientsPage() {
           </DialogHeader>
           <form onSubmit={handleCreateClient}>
             <div className="space-y-4 py-2">
-              {error && (
-                <div className="rounded-md bg-destructive/15 p-2 text-xs text-destructive">
-                  {error}
-                </div>
-              )}
               <div className="space-y-2">
                 <Label htmlFor="clientName">Client Name *</Label>
                 <Input
@@ -246,14 +253,14 @@ export default function ClientsPage() {
                 <Label htmlFor="description">Description</Label>
                 <textarea
                   id="description"
-                  className="min-h-[80px] w-full rounded-md border p-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="min-h-[80px] w-full rounded-lg border border-input bg-transparent p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="Overview of the client account..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="pt-3">
               <Button
                 type="button"
                 variant="outline"
@@ -261,7 +268,11 @@ export default function ClientsPage() {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="shadow-xs font-semibold"
+              >
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create Client
               </Button>

@@ -4,8 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, UserSquare2, Building2, Settings } from "lucide-react";
+import {
+  LayoutDashboard,
+  UserSquare2,
+  Building2,
+  Settings,
+  Sparkles,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -32,7 +39,7 @@ export function Sidebar() {
       roles: ["administrator", "manager", "engineer"],
     },
     {
-      title: "Settings",
+      title: "Admin & RBAC",
       href: "/settings",
       icon: Settings,
       roles: ["administrator"],
@@ -43,49 +50,103 @@ export function Sidebar() {
     (item) => !user?.role || item.roles.includes(user.role)
   );
 
+  const initials = user?.name
+    ? user.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : "ZY";
+
   return (
-    <aside className="flex w-64 flex-col justify-between border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+    <aside className="flex w-64 shrink-0 flex-col justify-between border-r border-border bg-card transition-colors">
       <div>
-        <div className="flex h-16 items-center border-b border-slate-200 px-6 dark:border-slate-800">
+        {/* Brand Header */}
+        <div className="flex h-16 items-center border-b border-border px-6">
           <Link
             href="/dashboard"
-            className="flex items-center gap-2 text-lg font-bold text-blue-600 dark:text-blue-400"
+            className="flex items-center gap-2.5 font-bold tracking-tight"
           >
-            <span>Zprofile</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-sm shadow-blue-500/20">
+              <span className="text-sm font-extrabold">Z</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-primary bg-clip-text text-sm font-bold text-transparent">
+                Zprofile
+              </span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Talent Hub
+              </span>
+            </div>
           </Link>
         </div>
-        <nav className="space-y-1 p-4">
-          {filteredNavItems.map((item) => {
-            const Icon = item.icon;
-            const isActive =
-              pathname === item.href || pathname.startsWith(`${item.href}/`);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400"
-                    : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                <span>{item.title}</span>
-              </Link>
-            );
-          })}
-        </nav>
+
+        {/* Navigation Items */}
+        <div className="p-3">
+          <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+            Platform Menu
+          </p>
+          <nav className="space-y-1">
+            {filteredNavItems.map((item) => {
+              const Icon = item.icon;
+              const isActive =
+                pathname === item.href ||
+                (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "group relative flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-medium transition-all duration-150",
+                    isActive
+                      ? "bg-primary/10 font-semibold text-primary shadow-sm"
+                      : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                  )}
+                >
+                  <Icon
+                    className={cn(
+                      "h-4 w-4 transition-colors",
+                      isActive
+                        ? "text-primary"
+                        : "text-muted-foreground group-hover:text-foreground"
+                    )}
+                  />
+                  <span>{item.title}</span>
+                  {isActive && (
+                    <span className="absolute right-2 h-1.5 w-1.5 rounded-full bg-primary" />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
       </div>
 
-      <div className="border-t border-slate-200 p-4 dark:border-slate-800">
-        <div className="flex items-center justify-between">
-          <div className="truncate">
-            <p className="truncate text-sm font-medium">{user?.name || "User"}</p>
-            <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+      {/* User Footer Panel */}
+      <div className="m-3 rounded-xl border border-border/80 bg-muted/40 p-3 transition-colors">
+        <div className="flex items-center gap-3">
+          <Avatar className="shadow-xs h-9 w-9 ring-1 ring-border">
+            <AvatarFallback>{initials}</AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-xs font-semibold text-foreground">
+              {user?.name || "User Account"}
+            </p>
+            <p className="truncate text-[11px] text-muted-foreground">{user?.email}</p>
           </div>
+        </div>
+        <div className="mt-2.5 flex items-center justify-between border-t border-border/50 pt-2">
+          <span className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground">
+            <Sparkles className="h-3 w-3 text-primary" />
+            Role Access
+          </span>
           {user?.role && (
-            <Badge variant="outline" className="text-[10px] capitalize">
+            <Badge
+              variant="secondary"
+              className="h-4.5 py-0 text-[10px] font-bold uppercase"
+            >
               {user.role}
             </Badge>
           )}

@@ -28,8 +28,14 @@ import {
   Printer,
   Loader2,
   Send,
+  Share2,
+  Briefcase,
+  Award,
+  FileText,
+  Building,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface ProfileDetail {
   ID: string;
@@ -115,14 +121,28 @@ export default function ProfileDetailPage({
       if (data.success) {
         setFeedbackDialogOpen(false);
         setFeedback("");
+        if (status === "is_ready") {
+          toast.success("Profile approved and marked ready for clients!");
+        } else if (status === "in_review") {
+          toast.success("Profile submitted for manager review!");
+        } else if (status === "review_changes") {
+          toast.warning("Change request sent with feedback to the engineer.");
+        }
         fetchProfile();
       } else {
-        alert(data.error?.message || "Failed to update status");
+        toast.error(data.error?.message || "Failed to update status");
       }
     } catch {
-      alert("Network error updating status");
+      toast.error("Network error updating status");
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleCopyLink = () => {
+    if (typeof window !== "undefined") {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success("Profile link copied to clipboard!");
     }
   };
 
@@ -130,7 +150,7 @@ export default function ProfileDetailPage({
     switch (status) {
       case "is_ready":
       case "publish":
-        return <Badge variant="success">Ready / Published</Badge>;
+        return <Badge variant="success">Ready / Approved</Badge>;
       case "in_review":
         return <Badge variant="warning">In Review</Badge>;
       case "review_changes":
@@ -166,22 +186,32 @@ export default function ProfileDetailPage({
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Top Action Bar (Hidden during print) */}
+      <div className="no-print flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <Link href="/profiles">
           <Button variant="ghost" size="sm" className="gap-2">
             <ArrowLeft className="h-4 w-4" />
             Back to Profiles
           </Button>
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCopyLink}
+            className="gap-1.5"
+          >
+            <Share2 className="h-3.5 w-3.5" />
+            Share
+          </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => window.print()}
-            className="gap-2"
+            className="gap-1.5"
           >
-            <Printer className="h-4 w-4" />
-            Print / Export
+            <Printer className="h-3.5 w-3.5" />
+            Export PDF
           </Button>
 
           {/* Engineer Actions */}
@@ -192,9 +222,9 @@ export default function ProfileDetailPage({
                 size="sm"
                 disabled={actionLoading}
                 onClick={() => handleStatusChange("in_review")}
-                className="gap-2"
+                className="shadow-xs gap-2"
               >
-                <Send className="h-4 w-4" />
+                <Send className="h-3.5 w-3.5" />
                 Submit for Review
               </Button>
             )}
@@ -207,9 +237,9 @@ export default function ProfileDetailPage({
                   size="sm"
                   disabled={actionLoading}
                   onClick={() => handleStatusChange("is_ready")}
-                  className="gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
+                  className="shadow-xs gap-1.5 bg-emerald-600 text-white hover:bg-emerald-700"
                 >
-                  <CheckCircle2 className="h-4 w-4" />
+                  <CheckCircle2 className="h-3.5 w-3.5" />
                   Approve Profile
                 </Button>
               )}
@@ -218,9 +248,9 @@ export default function ProfileDetailPage({
                 variant="destructive"
                 disabled={actionLoading}
                 onClick={() => setFeedbackDialogOpen(true)}
-                className="gap-2"
+                className="shadow-xs gap-1.5"
               >
-                <AlertTriangle className="h-4 w-4" />
+                <AlertTriangle className="h-3.5 w-3.5" />
                 Request Changes
               </Button>
             </>
@@ -228,55 +258,92 @@ export default function ProfileDetailPage({
         </div>
       </div>
 
-      <Card>
-        <CardHeader className="space-y-2">
-          <div className="flex items-center justify-between">
+      {/* Printable Executive Portfolio Card */}
+      <Card className="border border-border bg-card shadow-sm print:border-none print:shadow-none">
+        {/* Print Brand Header (Visible only in print) */}
+        <div className="mb-6 hidden items-center justify-between border-b border-slate-300 pb-6 print:flex">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 text-xl font-extrabold text-white">
+              Z
+            </div>
             <div>
-              <CardTitle className="text-2xl font-bold">{profile.post_title}</CardTitle>
-              <CardDescription className="text-base font-medium text-slate-700 dark:text-slate-300">
+              <h1 className="text-xl font-bold tracking-tight text-slate-900">
+                ZYMR, INC.
+              </h1>
+              <p className="text-xs font-medium text-slate-500">
+                Enterprise Cloud & Talent Engineering Solutions
+              </p>
+            </div>
+          </div>
+          <div className="text-right text-xs text-slate-500">
+            <p>Confidential Talent Dossier</p>
+            <p suppressHydrationWarning>{formatDate(new Date())}</p>
+          </div>
+        </div>
+
+        <CardHeader className="space-y-3 border-b border-border/60 pb-6">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+            <div className="space-y-1">
+              <CardTitle className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+                {profile.post_title}
+              </CardTitle>
+              <CardDescription className="text-base font-semibold text-primary">
                 {parsedData.designation || profile.post_excerpt || "Software Engineer"}
               </CardDescription>
             </div>
-            <div>{getStatusBadge(profile.post_status)}</div>
-          </div>
-          <div className="flex items-center gap-4 pt-1 text-xs text-muted-foreground">
-            <span>Author: {profile.author?.display_name || "Unknown"}</span>
-            <span>•</span>
-            <span>Email: {profile.author?.user_email}</span>
-            <span>•</span>
-            <span suppressHydrationWarning>Created: {formatDate(profile.post_date)}</span>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6 pt-4">
-          <div className="grid grid-cols-2 gap-4 rounded-lg border bg-slate-50 p-4 dark:bg-slate-900/50">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground">
-                Total Experience
-              </p>
-              <p className="text-lg font-bold">
-                {parsedData.experienceYears !== undefined
-                  ? `${parsedData.experienceYears} Years`
-                  : "--"}
-              </p>
-            </div>
-            {isAdminOrManager && parsedData.aliasName && (
-              <div>
-                <p className="text-xs font-medium text-muted-foreground">
-                  Internal Client Alias
-                </p>
-                <p className="text-lg font-bold">{parsedData.aliasName}</p>
-              </div>
-            )}
+            <div className="no-print shrink-0">{getStatusBadge(profile.post_status)}</div>
           </div>
 
-          <div>
-            <h4 className="mb-3 text-sm font-semibold">Core Technical Skills</h4>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1 font-medium text-foreground">
+              <Briefcase className="h-3.5 w-3.5 text-primary" />
+              {parsedData.experienceYears !== undefined
+                ? `${parsedData.experienceYears} Years Total Experience`
+                : "Experience not specified"}
+            </span>
+            <span>•</span>
+            <span suppressHydrationWarning>
+              Profile Date: {formatDate(profile.post_date)}
+            </span>
+            {isAdminOrManager && parsedData.aliasName && (
+              <>
+                <span>•</span>
+                <span className="font-semibold text-amber-600 dark:text-amber-400">
+                  Internal Client Alias: {parsedData.aliasName}
+                </span>
+              </>
+            )}
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-8 pt-6">
+          {/* Professional Summary */}
+          <div className="space-y-3">
+            <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-muted-foreground">
+              <FileText className="h-4 w-4 text-primary" />
+              Executive Profile Summary
+            </h3>
+            <div className="whitespace-pre-line rounded-xl border border-border/80 bg-muted/20 p-5 text-sm font-normal leading-relaxed text-foreground">
+              {profile.post_content ||
+                "Accomplished software engineering professional with proven expertise in building modern, scalable cloud platforms, distributed services, and enterprise web applications."}
+            </div>
+          </div>
+
+          {/* Technical Competencies & Skills */}
+          <div className="space-y-3">
+            <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-muted-foreground">
+              <Award className="h-4 w-4 text-primary" />
+              Core Technical Competencies
+            </h3>
             <div className="flex flex-wrap gap-2">
               {parsedData.skills && parsedData.skills.length > 0 ? (
                 parsedData.skills.map((skill) => (
-                  <Badge key={skill} variant="secondary" className="px-3 py-1 text-xs">
+                  <span
+                    key={skill}
+                    className="shadow-2xs inline-flex items-center rounded-lg border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary"
+                  >
                     {skill}
-                  </Badge>
+                  </span>
                 ))
               ) : (
                 <p className="text-sm text-muted-foreground">
@@ -286,10 +353,25 @@ export default function ProfileDetailPage({
             </div>
           </div>
 
-          <div>
-            <h4 className="mb-2 text-sm font-semibold">Professional Summary & Bio</h4>
-            <div className="whitespace-pre-line rounded-md border bg-white p-4 text-sm leading-relaxed text-slate-700 dark:bg-slate-900 dark:text-slate-300">
-              {profile.post_content || "No summary provided."}
+          {/* Engagement Overview Card */}
+          <div className="space-y-3 rounded-xl border border-border/80 bg-card p-5">
+            <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-muted-foreground">
+              <Building className="h-4 w-4 text-primary" />
+              Organizational Details
+            </h3>
+            <div className="grid grid-cols-1 gap-4 text-xs sm:grid-cols-2">
+              <div>
+                <p className="text-muted-foreground">Author</p>
+                <p className="mt-0.5 text-sm font-semibold text-foreground">
+                  {profile.author?.display_name || "Zymr Engineer"}
+                </p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Contact Email</p>
+                <p className="mt-0.5 text-sm font-semibold text-foreground">
+                  {profile.author?.user_email || "--"}
+                </p>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -301,14 +383,14 @@ export default function ProfileDetailPage({
           <DialogHeader>
             <DialogTitle>Request Profile Changes</DialogTitle>
             <DialogDescription>
-              Provide specific feedback to the engineer outlining what needs to be
-              improved.
+              Provide specific feedback to the engineer outlining required additions or
+              revisions.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <textarea
-              className="min-h-[100px] w-full rounded-md border p-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="e.g. Please expand on your cloud deployment experience and specify major projects..."
+              className="min-h-[120px] w-full rounded-lg border border-input bg-transparent p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="e.g. Please expand on your cloud architecture experience with AWS and specify recent project deliverables..."
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
             />

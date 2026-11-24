@@ -2,34 +2,72 @@
 
 import { signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { LogOut, User } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { LogOut } from "lucide-react";
+import { toast } from "sonner";
 
 export function Header() {
   const { data: session } = useSession();
+  const user = session?.user;
+
+  const initials = user?.name
+    ? user.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : "ZY";
+
+  const handleSignOut = async () => {
+    toast.info("Signing out...");
+    await signOut({ callbackUrl: "/login" });
+  };
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6 dark:border-slate-800 dark:bg-slate-900">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background/80 px-6 backdrop-blur-md transition-colors">
       <div className="flex items-center gap-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
-          Zymr Profile Management Portal
-        </h2>
-      </div>
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-            <User className="h-4 w-4" />
-          </div>
-          <span className="text-sm font-medium">{session?.user?.name}</span>
+        <div>
+          <h2 className="text-sm font-semibold tracking-tight text-foreground">
+            Zymr Talent Platform
+          </h2>
+          <p className="hidden text-xs text-muted-foreground sm:block">
+            Internal Profile & Enterprise Client Management
+          </p>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => signOut({ callbackUrl: "/login" })}
-          className="text-muted-foreground hover:text-foreground"
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          Sign Out
-        </Button>
+      </div>
+
+      <div className="flex items-center gap-3">
+        {/* Dark/Light Mode Switcher */}
+        <ThemeToggle />
+
+        <div className="h-4 w-px bg-border" />
+
+        {/* User Profile Info & Sign Out */}
+        <div className="flex items-center gap-3">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback>{initials}</AvatarFallback>
+          </Avatar>
+          <div className="hidden text-left md:block">
+            <p className="text-xs font-semibold leading-none text-foreground">
+              {user?.name || "User"}
+            </p>
+            <p className="mt-0.5 text-[11px] capitalize text-muted-foreground">
+              {user?.role || "Engineer"}
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSignOut}
+            className="ml-1 h-8 px-2.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+            title="Sign out of Zprofile"
+          >
+            <LogOut className="h-4 w-4" />
+            <span className="sr-only">Sign out</span>
+          </Button>
+        </div>
       </div>
     </header>
   );

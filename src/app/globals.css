@@ -4,48 +4,92 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    /* Base Surface & Text */
+    --background: 210 20% 98%;
     --foreground: 222.2 84% 4.9%;
+
+    /* Cards & Elevated Panels */
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
+
+    /* Popovers & Tooltips */
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
+
+    /* Brand Primary (Zymr Enterprise Blue) */
     --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
+
+    /* Secondary / Subdued */
+    --secondary: 214.3 31.8% 91.4%;
     --secondary-foreground: 222.2 47.4% 11.2%;
+
+    /* Muted Elements */
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
+
+    /* Accents */
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
+
+    /* Destructive */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+
+    /* Borders & Inputs */
+    --border: 214.3 31.8% 89%;
+    --input: 214.3 31.8% 89%;
     --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+
+    /* Border Radius Token */
+    --radius: 0.625rem;
+
+    /* Status Colors */
+    --success: 142.1 76.2% 36.3%;
+    --warning: 38 92% 50%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    /* Base Surface & Text */
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
+
+    /* Cards & Elevated Panels */
+    --card: 224 71.4% 6.5%;
+    --card-foreground: 210 20% 98%;
+
+    /* Popovers & Tooltips */
+    --popover: 224 71.4% 6.5%;
+    --popover-foreground: 210 20% 98%;
+
+    /* Brand Primary (Slightly brighter in dark mode for contrast) */
     --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
+
+    /* Secondary / Subdued */
+    --secondary: 217.2 32.6% 15%;
+    --secondary-foreground: 210 20% 98%;
+
+    /* Muted Elements */
+    --muted: 217.2 32.6% 14%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+
+    /* Accents */
+    --accent: 217.2 32.6% 14%;
+    --accent-foreground: 210 20% 98%;
+
+    /* Destructive */
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
+    --destructive-foreground: 210 20% 98%;
+
+    /* Borders & Inputs */
+    --border: 217.2 32.6% 16.5%;
+    --input: 217.2 32.6% 16.5%;
     --ring: 224.3 76.3% 48%;
+
+    /* Status Colors */
+    --success: 142.1 70.6% 45.3%;
+    --warning: 38 92% 50%;
   }
 }
 
@@ -54,6 +98,43 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary;
+  }
+}
+
+/* Print Optimization for Executive CV Export */
+@media print {
+  @page {
+    margin: 1.5cm;
+    size: auto;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+
+  /* Hide interactive UI elements on print */
+  aside,
+  header,
+  nav,
+  button,
+  .no-print,
+  [data-sonner-toaster] {
+    display: none !important;
+  }
+
+  /* Make main content occupy full paper width */
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .card,
+  [class*="border"] {
+    border-color: #e5e7eb !important;
+    box-shadow: none !important;
   }
 }
