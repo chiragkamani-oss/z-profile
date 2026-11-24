@@ -49,6 +49,7 @@ jest.mock("@/lib/prisma", () => ({
 }));
 
 describe("ConfigService", () => {
+  beforeEach(() => ConfigService.clearCache());
   afterEach(() => jest.clearAllMocks());
 
   it("returns default config when option does not exist", async () => {

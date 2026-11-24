@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { successResponse, errorResponse } from "../utils/api-response";
 import { UnauthorizedError } from "../utils/errors";
 import { serializeBigInt } from "@/lib/utils";
+import { MinHeap } from "@/lib/algorithms/min-heap";
 
 export class DashboardController {
   static async getStats(_req: NextRequest) {
@@ -78,11 +79,14 @@ export class DashboardController {
         }
       });
 
-      // Top 8 skills by frequency
-      const topSkills = Object.entries(skillCounts)
-        .map(([name, count]) => ({ name, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 8);
+      // Top 8 skills by frequency using Min-Heap: O(M log K) with K=8
+      const topSkillsHeap = new MinHeap<{ name: string; count: number }>(
+        (a, b) => a.count - b.count
+      );
+      for (const [name, count] of Object.entries(skillCounts)) {
+        topSkillsHeap.pushTopK({ name, count }, 8);
+      }
+      const topSkills = topSkillsHeap.toSortedDescending();
 
       // Total clients count
       const clientCount = await prisma.wp_posts.count({

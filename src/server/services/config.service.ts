@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { TTLCache } from "@/lib/cache/ttl-cache";
 
 export interface TaxonomyConfig {
   designation: {
@@ -93,19 +94,30 @@ const DEFAULT_CONFIG: TaxonomyConfig = {
 
 export class ConfigService {
   private static OPTION_KEY = "_zprofile_master_config";
+  private static cache = new TTLCache<string, TaxonomyConfig>(300000); // 5-minute in-memory cache
+
+  static clearCache(): void {
+    this.cache.clear();
+  }
 
   static async getConfig(): Promise<TaxonomyConfig> {
+    const cached = this.cache.get(this.OPTION_KEY);
+    if (cached) {
+      return cached;
+    }
+
     const option = await prisma.wp_options.findFirst({
       where: { option_name: this.OPTION_KEY },
     });
 
     if (!option || !option.option_value) {
+      this.cache.set(this.OPTION_KEY, DEFAULT_CONFIG);
       return DEFAULT_CONFIG;
     }
 
     try {
       const parsed = JSON.parse(option.option_value);
-      return {
+      const config: TaxonomyConfig = {
         designation: {
           ...DEFAULT_CONFIG.designation,
           ...(parsed.designation || {}),
@@ -125,7 +137,11 @@ export class ConfigService {
           ...(parsed.education || {}),
         },
       };
+
+      this.cache.set(this.OPTION_KEY, config);
+      return config;
     } catch {
+      this.cache.set(this.OPTION_KEY, DEFAULT_CONFIG);
       return DEFAULT_CONFIG;
     }
   }
@@ -156,6 +172,7 @@ export class ConfigService {
       });
     }
 
+    this.cache.set(this.OPTION_KEY, merged);
     return merged;
   }
 }

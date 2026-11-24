@@ -9,14 +9,31 @@ export function cn(...inputs: ClassValue[]): string {
 }
 
 /**
- * Safely parses BigInt values to string or number for JSON serialization.
+ * High-performance tree walker for BigInt serialization.
+ * Avoids JSON.parse(JSON.stringify()) string allocations and memory pressure,
+ * executing in O(V) time with zero intermediate JSON serialization overhead.
  */
 export function serializeBigInt<T>(obj: T): T {
-  return JSON.parse(
-    JSON.stringify(obj, (_key, value) =>
-      typeof value === "bigint" ? value.toString() : value
-    )
-  );
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+  if (typeof obj === "bigint") {
+    return (obj as bigint).toString() as unknown as T;
+  }
+  if (typeof obj !== "object") {
+    return obj;
+  }
+  if (obj instanceof Date) {
+    return obj.toISOString() as unknown as T;
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(serializeBigInt) as unknown as T;
+  }
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    result[key] = serializeBigInt(value);
+  }
+  return result as T;
 }
 
 /**
