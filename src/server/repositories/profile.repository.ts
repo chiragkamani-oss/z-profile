@@ -78,7 +78,9 @@ export class ProfileRepository {
         post_status: "in_draft",
         post_type: "profile-builder",
         post_date: new Date(),
+        post_date_gmt: new Date(),
         post_modified: new Date(),
+        post_modified_gmt: new Date(),
         to_ping: "",
         pinged: "",
         post_content_filtered: "",
@@ -115,12 +117,22 @@ export class ProfileRepository {
         ...(data.bio !== undefined ? { post_content: data.bio } : {}),
         ...(data.designation ? { post_excerpt: data.designation } : {}),
         post_modified: new Date(),
+        post_modified_gmt: new Date(),
       },
       select: SAFE_POST_SELECT,
     });
 
     // Update meta
-    const existingMeta = post.postmeta.find((m) => m.meta_key === "profile_data");
+    const existingMeta = await prisma.wp_postmeta.findFirst({
+      where: {
+        post_id: BigInt(id),
+        meta_key: "profile_data",
+      },
+      select: {
+        meta_id: true,
+        meta_value: true,
+      },
+    });
     let currentData = {};
     if (existingMeta?.meta_value) {
       try {
@@ -165,7 +177,9 @@ export class ProfileRepository {
       data: {
         post_status: status,
         post_modified: new Date(),
+        post_modified_gmt: new Date(),
       },
+      select: { ID: true },
     });
 
     const existingMeta = await prisma.wp_postmeta.findFirst({
@@ -203,6 +217,7 @@ export class ProfileRepository {
   static async delete(id: number) {
     return prisma.wp_posts.delete({
       where: { ID: BigInt(id) },
+      select: { ID: true },
     });
   }
 }

@@ -102,9 +102,9 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <PageTitle title="Executive Dashboard" />
       {/* Welcome Banner */}
-      <div className="relative overflow-hidden rounded-2xl border border-blue-600/10 bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white shadow-md dark:border-blue-500/20 dark:bg-gradient-to-r dark:from-card dark:via-blue-950/30 dark:to-card dark:text-foreground dark:shadow-none">
+      <div className="relative overflow-hidden rounded-2xl border border-blue-600/15 bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white shadow-md dark:border-border/80 dark:bg-card dark:bg-none dark:text-foreground dark:shadow-none">
         {/* Subtle decorative glow in dark mode */}
-        <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-500/15" />
+        <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-blue-500/10 blur-3xl dark:bg-primary/10" />
 
         <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">

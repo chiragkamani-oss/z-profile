@@ -249,8 +249,8 @@ export function Sidebar() {
         <div className="shrink-0 border-t border-border/50 p-3">
           <div
             className={cn(
-              "flex items-center rounded-xl p-1 transition-colors",
-              isVisuallyExpanded && "border border-border/60 bg-muted/30 p-2.5"
+              "flex items-center rounded-xl p-1.5 transition-colors",
+              isVisuallyExpanded && "border border-border/60 bg-muted/30"
             )}
           >
             {/* Fixed Avatar Anchor: Stays permanently locked in place! */}
