@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   UserSquare2,
   Building2,
+  FolderKanban,
   Settings,
   Sparkles,
   PanelLeftClose,
@@ -84,6 +85,12 @@ export function Sidebar() {
       title: "Clients",
       href: "/clients",
       icon: Building2,
+      roles: ["administrator", "manager", "engineer"],
+    },
+    {
+      title: "Projects",
+      href: "/projects",
+      icon: FolderKanban,
       roles: ["administrator", "manager", "engineer"],
     },
     {

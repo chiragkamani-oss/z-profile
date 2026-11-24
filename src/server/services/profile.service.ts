@@ -1,4 +1,5 @@
 import { ProfileRepository } from "../repositories/profile.repository";
+import { EmailService } from "./email.service";
 import {
   CreateProfileInput,
   UpdateProfileInput,
@@ -137,6 +138,36 @@ export class ProfileService {
       input.status,
       input.feedback
     );
+
+    // Asynchronously trigger outbound notification matching legacy mail hooks
+    const engineerEmail = existing.author?.user_email;
+    const engineerName = existing.author?.display_name || existing.post_title;
+    if (engineerEmail) {
+      if (input.status === "in_review") {
+        EmailService.sendProfileSubmittedNotification({
+          engineerName,
+          engineerEmail,
+          profileTitle: existing.post_title,
+          profileId: id,
+        }).catch(console.error);
+      } else if (input.status === "is_ready") {
+        EmailService.sendProfileApprovedNotification({
+          engineerName,
+          engineerEmail,
+          profileTitle: existing.post_title,
+          profileId: id,
+        }).catch(console.error);
+      } else if (input.status === "review_changes" && input.feedback) {
+        EmailService.sendChangesRequestedNotification({
+          engineerName,
+          engineerEmail,
+          profileTitle: existing.post_title,
+          profileId: id,
+          feedback: input.feedback,
+        }).catch(console.error);
+      }
+    }
+
     return serializeBigInt(updated);
   }
 
