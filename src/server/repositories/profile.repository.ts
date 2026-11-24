@@ -220,9 +220,7 @@ export class ProfileRepository {
         ID: BigInt(id),
         post_type: "profile-builder",
       },
-      include: {
-        postmeta: true,
-      },
+      select: SAFE_POST_SELECT,
     });
 
     if (!original) {
@@ -252,7 +250,7 @@ export class ProfileRepository {
         if (m.meta_key === "profile_status") {
           return { meta_key: "profile_status", meta_value: "in_draft" };
         }
-        return { meta_key: m.meta_key!, meta_value: m.meta_value };
+        return { meta_key: m.meta_key, meta_value: m.meta_value };
       });
 
     if (!metaToCopy.some((m) => m.meta_key === "profile_status")) {
