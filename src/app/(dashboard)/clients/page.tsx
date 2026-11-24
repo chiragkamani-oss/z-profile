@@ -22,6 +22,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Building2, Plus, Globe, Loader2 } from "lucide-react";
+import { formatDate } from "@/lib/utils";
 
 interface ClientItem {
   ID: string;
@@ -177,8 +178,11 @@ export default function ClientsPage() {
                       <TableCell className="max-w-xs truncate text-xs text-muted-foreground">
                         {client.post_content || "--"}
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {new Date(client.post_date).toLocaleDateString()}
+                      <TableCell
+                        className="text-xs text-muted-foreground"
+                        suppressHydrationWarning
+                      >
+                        {formatDate(client.post_date)}
                       </TableCell>
                     </TableRow>
                   );

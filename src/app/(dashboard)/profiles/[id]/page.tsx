@@ -29,6 +29,7 @@ import {
   Loader2,
   Send,
 } from "lucide-react";
+import { formatDate } from "@/lib/utils";
 
 interface ProfileDetail {
   ID: string;
@@ -243,7 +244,7 @@ export default function ProfileDetailPage({
             <span>•</span>
             <span>Email: {profile.author?.user_email}</span>
             <span>•</span>
-            <span>Created: {new Date(profile.post_date).toLocaleDateString()}</span>
+            <span suppressHydrationWarning>Created: {formatDate(profile.post_date)}</span>
           </div>
         </CardHeader>
         <CardContent className="space-y-6 pt-4">

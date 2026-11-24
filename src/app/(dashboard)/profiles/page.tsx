@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Plus, Search, Eye } from "lucide-react";
+import { formatDate } from "@/lib/utils";
 
 interface ProfileItem {
   ID: string;
@@ -137,8 +138,8 @@ export default function ProfilesPage() {
                   <TableCell>{profile.post_excerpt || "--"}</TableCell>
                   <TableCell>{profile.author?.display_name || "--"}</TableCell>
                   <TableCell>{getStatusBadge(profile.post_status)}</TableCell>
-                  <TableCell>
-                    {new Date(profile.post_date).toLocaleDateString()}
+                  <TableCell suppressHydrationWarning>
+                    {formatDate(profile.post_date)}
                   </TableCell>
                   <TableCell className="text-right">
                     <Link href={`/profiles/${profile.ID}`}>

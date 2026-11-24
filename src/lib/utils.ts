@@ -18,3 +18,17 @@ export function serializeBigInt<T>(obj: T): T {
     )
   );
 }
+
+/**
+ * Formats a date string consistently across server and client to prevent hydration mismatch.
+ */
+export function formatDate(dateInput: string | Date | null | undefined): string {
+  if (!dateInput) return "--";
+  try {
+    const d = new Date(dateInput);
+    if (isNaN(d.getTime())) return "--";
+    return d.toISOString().split("T")[0]; // YYYY-MM-DD
+  } catch {
+    return "--";
+  }
+}

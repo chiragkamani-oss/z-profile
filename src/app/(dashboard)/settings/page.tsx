@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { ShieldCheck, Users, Lock, CheckCircle2, XCircle } from "lucide-react";
+import { formatDate } from "@/lib/utils";
 
 interface UserItem {
   id: string;
@@ -181,8 +182,11 @@ export default function SettingsPage() {
                         </span>
                       )}
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {new Date(u.registered).toLocaleDateString()}
+                    <TableCell
+                      className="text-xs text-muted-foreground"
+                      suppressHydrationWarning
+                    >
+                      {formatDate(u.registered)}
                     </TableCell>
                   </TableRow>
                 ))
