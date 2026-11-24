@@ -3,6 +3,7 @@ const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
   poweredByHeader: false, // Prevents server fingerprinting (OWASP / Sonar)
+  devIndicators: false, // Disables the floating Next.js dev indicator overlay
   async headers() {
     return [
       {
