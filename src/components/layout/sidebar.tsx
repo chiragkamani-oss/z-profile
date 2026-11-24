@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -12,9 +12,7 @@ import {
   Settings,
   Sparkles,
   PanelLeftClose,
-  PanelLeft,
   Pin,
-  PinOff,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -28,6 +26,7 @@ export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -35,9 +34,31 @@ export function Sidebar() {
     if (saved === "true") {
       setIsCollapsed(true);
     }
+    return () => {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    };
   }, []);
 
+  const handleMouseEnter = () => {
+    if (!isCollapsed) return;
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    // Subtle 140ms intentional delay to prevent accidental flashes on pass-through
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsHovered(true);
+    }, 140);
+  };
+
+  const handleMouseLeave = () => {
+    if (!isCollapsed) return;
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    // Graceful 160ms exit delay so cursor wobbles don't collapse abruptly
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsHovered(false);
+    }, 160);
+  };
+
   const toggleCollapse = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
     setIsCollapsed((prev) => {
       const next = !prev;
       localStorage.setItem("zprofile_sidebar_collapsed", String(next));
@@ -86,38 +107,38 @@ export function Sidebar() {
         .slice(0, 2)
     : "ZY";
 
-  // The sidebar visually expands if it is either unpinned (expanded) OR if it is in collapsed rail mode and currently hovered
+  // Visual expansion flag
   const isVisuallyExpanded = !isCollapsed || isHovered;
 
   return (
     <div
-      className={cn(
-        "relative shrink-0 transition-all duration-300 ease-out",
-        isCollapsed ? "w-[72px]" : "w-64"
-      )}
+      className={cn("relative shrink-0", isCollapsed ? "w-[72px]" : "w-64")}
+      style={{
+        transition: "width 360ms cubic-bezier(0.2, 0, 0, 1)",
+      }}
     >
       <aside
-        onMouseEnter={() => {
-          if (isCollapsed) setIsHovered(true);
-        }}
-        onMouseLeave={() => {
-          if (isCollapsed) setIsHovered(false);
-        }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         className={cn(
-          "sticky top-0 z-40 flex h-screen flex-col justify-between border-r border-border/60 bg-card/95 backdrop-blur-xl transition-all duration-300 ease-out",
+          "sticky top-0 z-40 flex h-screen flex-col justify-between border-r border-border/60 bg-card/95 backdrop-blur-xl will-change-[width,box-shadow]",
           isCollapsed
             ? isHovered
               ? "absolute left-0 top-0 w-64 shadow-2xl ring-1 ring-border/50"
               : "w-[72px]"
             : "w-64"
         )}
+        style={{
+          transition:
+            "width 360ms cubic-bezier(0.2, 0, 0, 1), box-shadow 360ms cubic-bezier(0.2, 0, 0, 1)",
+        }}
       >
         {/* Brand Header */}
         <div className="flex h-16 shrink-0 items-center justify-between border-b border-border/50 px-4">
           <Link
             href="/dashboard"
             className={cn(
-              "flex items-center gap-2.5 overflow-hidden font-bold tracking-tight",
+              "flex items-center gap-2.5 overflow-hidden whitespace-nowrap font-bold tracking-tight",
               !isVisuallyExpanded && "w-full justify-center"
             )}
             title="Zprofile Talent Platform"
@@ -126,7 +147,7 @@ export function Sidebar() {
               <span className="text-sm font-extrabold">Z</span>
             </div>
             {isVisuallyExpanded && (
-              <div className="flex flex-col transition-opacity duration-200">
+              <div className="flex flex-col opacity-100 transition-opacity delay-75 duration-200">
                 <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-primary bg-clip-text text-sm font-bold text-transparent">
                   Zprofile
                 </span>
@@ -142,7 +163,7 @@ export function Sidebar() {
               variant="ghost"
               size="sm"
               onClick={toggleCollapse}
-              className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+              className="h-7 w-7 p-0 text-muted-foreground opacity-100 transition-opacity delay-75 duration-200 hover:text-foreground"
               title={isCollapsed ? "Pin Sidebar Open" : "Collapse to Hover Rail"}
             >
               {isCollapsed ? (
@@ -157,7 +178,7 @@ export function Sidebar() {
         {/* Navigation Items (Independently Scrollable with Sleek Scrollbar) */}
         <div className="flex-1 overflow-y-auto px-2.5 py-4">
           {isVisuallyExpanded && (
-            <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+            <p className="whitespace-nowrap px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 opacity-100 transition-opacity delay-75 duration-200">
               Platform Menu
             </p>
           )}
@@ -174,7 +195,7 @@ export function Sidebar() {
                   href={item.href}
                   title={!isVisuallyExpanded ? item.title : undefined}
                   className={cn(
-                    "group relative flex items-center rounded-lg text-sm font-medium transition-all duration-150",
+                    "group relative flex items-center whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-150",
                     isVisuallyExpanded
                       ? "gap-3 px-3 py-2.5"
                       : "h-11 w-full justify-center p-0",
@@ -193,7 +214,9 @@ export function Sidebar() {
                   />
                   {isVisuallyExpanded && (
                     <>
-                      <span className="truncate">{item.title}</span>
+                      <span className="truncate opacity-100 transition-opacity delay-75 duration-200">
+                        {item.title}
+                      </span>
                       {isActive && (
                         <span className="absolute right-2 h-1.5 w-1.5 rounded-full bg-primary" />
                       )}
@@ -214,12 +237,12 @@ export function Sidebar() {
               </Avatar>
             </div>
           ) : (
-            <div className="rounded-xl border border-border/60 bg-muted/30 p-3 transition-colors">
+            <div className="rounded-xl border border-border/60 bg-muted/30 p-3 transition-opacity delay-75 duration-200">
               <div className="flex items-center gap-3">
-                <Avatar className="h-9 w-9 shadow-xs ring-1 ring-border/80">
+                <Avatar className="h-9 w-9 shrink-0 shadow-xs ring-1 ring-border/80">
                   <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 whitespace-nowrap">
                   <p className="truncate text-xs font-semibold text-foreground">
                     {user?.name || "User Account"}
                   </p>
@@ -229,7 +252,7 @@ export function Sidebar() {
                 </div>
               </div>
               <div className="mt-2.5 flex items-center justify-between border-t border-border/40 pt-2">
-                <span className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground">
+                <span className="flex items-center gap-1 whitespace-nowrap text-[10px] font-medium text-muted-foreground">
                   <Sparkles className="h-3 w-3 text-primary" />
                   Role Access
                 </span>
