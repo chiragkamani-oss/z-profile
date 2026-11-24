@@ -7,6 +7,27 @@ export interface ProfileFilterOptions {
   search?: string;
 }
 
+const SAFE_POST_SELECT = {
+  ID: true,
+  post_author: true,
+  post_date: true,
+  post_content: true,
+  post_title: true,
+  post_excerpt: true,
+  post_status: true,
+  post_modified: true,
+  post_type: true,
+  postmeta: true,
+  author: {
+    select: {
+      ID: true,
+      display_name: true,
+      user_email: true,
+      user_login: true,
+    },
+  },
+} as const;
+
 export class ProfileRepository {
   static async findMany(options: ProfileFilterOptions = {}) {
     const where: any = {
@@ -31,17 +52,7 @@ export class ProfileRepository {
     const posts = await prisma.wp_posts.findMany({
       where,
       orderBy: { post_date: "desc" },
-      include: {
-        postmeta: true,
-        author: {
-          select: {
-            ID: true,
-            display_name: true,
-            user_email: true,
-            user_login: true,
-          },
-        },
-      },
+      select: SAFE_POST_SELECT,
     });
 
     return posts;
@@ -53,17 +64,7 @@ export class ProfileRepository {
         ID: BigInt(id),
         post_type: "profile-builder",
       },
-      include: {
-        postmeta: true,
-        author: {
-          select: {
-            ID: true,
-            display_name: true,
-            user_email: true,
-            user_login: true,
-          },
-        },
-      },
+      select: SAFE_POST_SELECT,
     });
   }
 
@@ -100,9 +101,7 @@ export class ProfileRepository {
           ],
         },
       },
-      include: {
-        postmeta: true,
-      },
+      select: SAFE_POST_SELECT,
     });
 
     return post;
@@ -117,7 +116,7 @@ export class ProfileRepository {
         ...(data.designation ? { post_excerpt: data.designation } : {}),
         post_modified: new Date(),
       },
-      include: { postmeta: true },
+      select: SAFE_POST_SELECT,
     });
 
     // Update meta
