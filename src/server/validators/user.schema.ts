@@ -3,14 +3,19 @@ import { z } from "zod";
 export const createUserSchema = z.object({
   username: z
     .string()
+    .trim()
     .min(2, "Username must be at least 2 characters")
     .max(60, "Username must not exceed 60 characters")
     .regex(
-      /^[a-zA-Z0-9._-]+$/,
-      "Username can only contain alphanumeric characters, underscores, dashes, and dots"
+      /^[a-zA-Z0-9._@-]+$/,
+      "Username can only contain alphanumeric characters, underscores, dashes, dots, and @"
     ),
-  displayName: z.string().min(2, "Display name must be at least 2 characters").max(250),
-  email: z.string().email("Invalid email address"),
+  displayName: z
+    .string()
+    .trim()
+    .min(2, "Display name must be at least 2 characters")
+    .max(250),
+  email: z.string().trim().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters").max(100),
   role: z
     .enum(["administrator", "manager", "partner", "sales-person", "engineer"])

@@ -42,6 +42,7 @@ import {
   GraduationCap,
   Briefcase,
   Edit3,
+  AlertCircle,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { PageTitle } from "@/components/layout/page-title";
@@ -78,6 +79,7 @@ export default function SettingsPage() {
 
   // User Management Modals
   const [addUserOpen, setAddUserOpen] = useState(false);
+  const [addUserError, setAddUserError] = useState("");
   const [isSubmittingUser, setIsSubmittingUser] = useState(false);
   const [newUsername, setNewUsername] = useState("");
   const [newDisplayName, setNewDisplayName] = useState("");
@@ -88,6 +90,7 @@ export default function SettingsPage() {
 
   // Edit User State
   const [editUserOpen, setEditUserOpen] = useState(false);
+  const [editUserError, setEditUserError] = useState("");
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editDisplayName, setEditDisplayName] = useState("");
   const [editUserEmail, setEditUserEmail] = useState("");
@@ -126,6 +129,7 @@ export default function SettingsPage() {
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmittingUser(true);
+    setAddUserError("");
     try {
       const res = await fetch("/api/users", {
         method: "POST",
@@ -143,6 +147,7 @@ export default function SettingsPage() {
       if (data.success) {
         toast.success(`User "${newUsername}" created successfully!`);
         setAddUserOpen(false);
+        setAddUserError("");
         setNewUsername("");
         setNewDisplayName("");
         setNewUserEmail("");
@@ -151,10 +156,14 @@ export default function SettingsPage() {
         setNewUserCanShare(false);
         fetchUsers();
       } else {
-        toast.error(data.error?.message || "Failed to create user");
+        const errorMsg = data.error?.message || "Failed to create user";
+        setAddUserError(errorMsg);
+        toast.error(errorMsg);
       }
     } catch {
-      toast.error("Network error while creating user");
+      const netError = "Network error while creating user";
+      setAddUserError(netError);
+      toast.error(netError);
     } finally {
       setIsSubmittingUser(false);
     }
@@ -167,6 +176,7 @@ export default function SettingsPage() {
     setEditUserPassword("");
     setEditUserRole(user.role);
     setEditUserCanShare(user.canShareProfile);
+    setEditUserError("");
     setEditUserOpen(true);
   };
 
@@ -174,6 +184,7 @@ export default function SettingsPage() {
     e.preventDefault();
     if (!editingUserId) return;
     setIsUpdatingUser(true);
+    setEditUserError("");
     try {
       const payload: Record<string, unknown> = {
         displayName: editDisplayName,
@@ -193,13 +204,18 @@ export default function SettingsPage() {
       const data = await res.json();
       if (data.success) {
         toast.success("User account updated successfully!");
+        setEditUserError("");
         setEditUserOpen(false);
         fetchUsers();
       } else {
-        toast.error(data.error?.message || "Failed to update user");
+        const errorMsg = data.error?.message || "Failed to update user";
+        setEditUserError(errorMsg);
+        toast.error(errorMsg);
       }
     } catch {
-      toast.error("Network error while updating user");
+      const netError = "Network error while updating user";
+      setEditUserError(netError);
+      toast.error(netError);
     } finally {
       setIsUpdatingUser(false);
     }
@@ -817,6 +833,12 @@ export default function SettingsPage() {
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateUser} className="space-y-4">
+            {addUserError && (
+              <div className="flex items-start gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3 text-sm font-medium text-destructive">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{addUserError}</span>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="newUsername">Username *</Label>
               <Input
@@ -921,6 +943,12 @@ export default function SettingsPage() {
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleUpdateUser} className="space-y-4">
+            {editUserError && (
+              <div className="flex items-start gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3 text-sm font-medium text-destructive">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{editUserError}</span>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="editDisplayName">Display Name *</Label>
               <Input
