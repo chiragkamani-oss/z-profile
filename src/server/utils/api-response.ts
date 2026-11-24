@@ -23,6 +23,8 @@ export function successResponse<T>(data: T, status = 200) {
 }
 
 export function errorResponse(error: unknown, fallbackStatus = 500) {
+  console.error("[API Error]:", error);
+
   if (error instanceof ZodError) {
     return NextResponse.json<ApiResponse>(
       {
@@ -50,10 +52,7 @@ export function errorResponse(error: unknown, fallbackStatus = 500) {
     );
   }
 
-  const message =
-    process.env.NODE_ENV === "production"
-      ? "An unexpected error occurred"
-      : (error as Error)?.message || "Internal server error";
+  const message = (error as Error)?.message || "An unexpected error occurred";
 
   return NextResponse.json<ApiResponse>(
     {

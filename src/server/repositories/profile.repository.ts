@@ -290,8 +290,16 @@ export class ProfileRepository {
   }
 
   static async delete(id: number) {
+    const postBigId = BigInt(id);
+
+    // 1. Delete associated meta entries for this post
+    await prisma.wp_postmeta.deleteMany({
+      where: { post_id: postBigId },
+    });
+
+    // 2. Delete the main post
     return prisma.wp_posts.delete({
-      where: { ID: BigInt(id) },
+      where: { ID: postBigId },
       select: { ID: true },
     });
   }
