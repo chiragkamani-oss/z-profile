@@ -26,18 +26,20 @@ export function errorResponse(error: unknown, fallbackStatus = 500) {
   console.error("[API Error]:", error);
 
   if (error instanceof ZodError) {
-    const errorMessages = Array.isArray(error.errors)
+    const fieldDetails = error.flatten().fieldErrors;
+    const fromErrors = Array.isArray(error.errors)
       ? error.errors.map((e) => e.message).filter(Boolean)
       : [];
-    const message =
-      errorMessages.length > 0 ? errorMessages.join(". ") : "Validation failed";
+    const fromFlatten = Object.values(fieldDetails).flat().filter(Boolean) as string[];
+    const combined = fromErrors.length > 0 ? fromErrors : fromFlatten;
+    const message = combined.length > 0 ? combined.join(". ") : "Validation failed";
     return NextResponse.json<ApiResponse>(
       {
         success: false,
         error: {
           message,
           code: "VALIDATION_ERROR",
-          details: error.flatten().fieldErrors,
+          details: fieldDetails,
         },
       },
       { status: 400 }
