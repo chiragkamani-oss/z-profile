@@ -9,6 +9,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +36,7 @@ import {
   Trash2,
   User,
   X,
+  HelpCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -119,6 +128,42 @@ export default function NewProfilePage() {
     issuer: "",
     year: "",
   });
+
+  // Missing Config Request Dialog
+  const [missingConfigOpen, setMissingConfigOpen] = useState(false);
+  const [requestSection, setRequestSection] = useState("Technology Skills");
+  const [requestData, setRequestData] = useState("");
+  const [sendingRequest, setSendingRequest] = useState(false);
+
+  const handleSendMissingConfigRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!requestData.trim()) return;
+    setSendingRequest(true);
+    try {
+      const res = await fetch("/api/config/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          section: requestSection,
+          requestedData: requestData.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(
+          "Request sent to administrator! They will review and update master taxonomies."
+        );
+        setMissingConfigOpen(false);
+        setRequestData("");
+      } else {
+        toast.error(data.error?.message || "Failed to submit request");
+      }
+    } catch {
+      toast.error("Network error while submitting metadata request");
+    } finally {
+      setSendingRequest(false);
+    }
+  };
 
   // Skill Handlers
   const addSkill = (skillToAdd?: string) => {
@@ -269,9 +314,20 @@ export default function NewProfilePage() {
             Back to Profiles Directory
           </Button>
         </Link>
-        <span className="text-xs font-medium text-muted-foreground">
-          Step {currentStep} of {STEPS.length}
-        </span>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setMissingConfigOpen(true)}
+            className="gap-1.5 text-xs"
+          >
+            <HelpCircle className="h-3.5 w-3.5" />
+            Request Missing Option
+          </Button>
+          <span className="text-xs font-medium text-muted-foreground">
+            Step {currentStep} of {STEPS.length}
+          </span>
+        </div>
       </div>
 
       {/* Stepper Navigation Bar */}
@@ -851,6 +907,65 @@ export default function NewProfilePage() {
           </div>
         </div>
       </Card>
+
+      {/* Missing Config Notification Dialog */}
+      <Dialog open={missingConfigOpen} onOpenChange={setMissingConfigOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <HelpCircle className="h-5 w-5 text-primary" />
+              Request Missing Option
+            </DialogTitle>
+            <DialogDescription>
+              Can't find a skill, designation, or dev tool? Submit a request to the
+              platform administrators to add it.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSendMissingConfigRequest} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="requestSection">Section / Taxonomy Category</Label>
+              <select
+                id="requestSection"
+                value={requestSection}
+                onChange={(e) => setRequestSection(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs focus:outline-none focus:ring-1 focus:ring-ring"
+              >
+                <option value="Technology Skills">Technology Skills</option>
+                <option value="Domain Skills">Domain Skills</option>
+                <option value="Development Tools">Development Tools</option>
+                <option value="Designation Levels">Designation Levels</option>
+                <option value="Designation Roles">Designation Roles</option>
+                <option value="Speciality Tracks">Speciality Tracks</option>
+                <option value="Education Degrees">Education Degrees</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="requestData">Requested Option / Tag Name *</Label>
+              <Input
+                id="requestData"
+                required
+                placeholder="e.g. Apache Pulsar, LangChain, Snowflake"
+                value={requestData}
+                onChange={(e) => setRequestData(e.target.value)}
+              />
+            </div>
+            <DialogFooter className="pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setMissingConfigOpen(false)}
+                disabled={sendingRequest}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={sendingRequest || !requestData.trim()}>
+                {sendingRequest && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Send Request to Admin
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

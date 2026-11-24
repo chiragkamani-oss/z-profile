@@ -85,4 +85,15 @@ export class ProfileController {
       return errorResponse(error);
     }
   }
+
+  static async deleteProfile(req: NextRequest, { params }: { params: { id: string } }) {
+    try {
+      const user = await this.getSessionUser();
+      const id = parseInt(params.id, 10);
+      const result = await ProfileService.deleteProfile(id, user);
+      return successResponse(result);
+    } catch (error) {
+      return errorResponse(error);
+    }
+  }
 }

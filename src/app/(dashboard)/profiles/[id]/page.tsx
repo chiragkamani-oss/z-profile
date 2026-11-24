@@ -45,6 +45,8 @@ import {
   Building,
   Check,
   History,
+  Edit3,
+  Trash2,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
@@ -107,6 +109,28 @@ export default function ProfileDetailPage({
   const [sharedDate, setSharedDate] = useState(new Date().toISOString().split("T")[0]);
   const [savingShare, setSavingShare] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteProfile = async () => {
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/profiles/${id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Profile deleted successfully");
+        router.push("/profiles");
+      } else {
+        toast.error(data.error?.message || "Failed to delete profile");
+      }
+    } catch {
+      toast.error("Network error while deleting profile");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const isAuthenticated = sessionStatus === "authenticated" && !!session?.user;
   const user = session?.user;
@@ -361,6 +385,30 @@ export default function ProfileDetailPage({
             <Printer className="h-3.5 w-3.5" />
             Export PDF
           </Button>
+
+          {isAuthenticated && (
+            <>
+              <Link href={`/profiles/${id}/edit`}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 hover:text-primary"
+                >
+                  <Edit3 className="h-3.5 w-3.5" />
+                  Edit Profile
+                </Button>
+              </Link>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDeleteConfirmOpen(true)}
+                className="gap-1.5 text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Delete
+              </Button>
+            </>
+          )}
 
           {/* Engineer Actions */}
           {isAuthenticated &&
@@ -707,6 +755,40 @@ export default function ProfileDetailPage({
             >
               {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Send Feedback
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <Trash2 className="h-5 w-5" />
+              Confirm Profile Deletion
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to permanently delete profile{" "}
+              <strong>"{profile.post_title}"</strong>? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDeleteConfirmOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteProfile}
+              disabled={isDeleting}
+            >
+              {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Delete Profile
             </Button>
           </DialogFooter>
         </DialogContent>

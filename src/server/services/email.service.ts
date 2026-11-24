@@ -158,4 +158,49 @@ export class EmailService {
 
     return this.sendEmail({ to: params.engineerEmail, subject, html });
   }
+
+  /**
+   * Dispatched when an engineer requests a new metadata option (Parity with missing-config-notification.php)
+   */
+  static async sendMissingConfigNotification(params: {
+    employeeName: string;
+    employeeEmail: string;
+    section: string;
+    requestedData: string;
+  }) {
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@zymr.com";
+    const subject = `Zprofile: New missing config request from ${params.employeeName}`;
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <div style="background-color: #2A4B65; padding: 16px; border-radius: 6px; text-align: center; color: white;">
+          <h2 style="margin: 0; font-size: 20px;">Zprofile Configuration System</h2>
+          <p style="margin: 4px 0 0 0; font-size: 13px; color: #bae6fd;">Missing Metadata Tag Request</p>
+        </div>
+        <div style="padding: 20px 0;">
+          <p>Dear Admin,</p>
+          <p>This is to let you know that a Zymrian has requested new metadata to be added in the Z-profile master taxonomies.</p>
+          <table style="width: 100%; border-collapse: collapse; margin: 16px 0; border: 1px solid #dedede;">
+            <tr style="background-color: #f4f7fc;">
+              <th style="padding: 12px; text-align: left; border: 1px solid #dedede; font-size: 13px;">Employee:</th>
+              <td style="padding: 12px; border: 1px solid #dedede; font-size: 13px;">${params.employeeName} (${params.employeeEmail})</td>
+            </tr>
+            <tr>
+              <th style="padding: 12px; text-align: left; border: 1px solid #dedede; font-size: 13px; background-color: #f4f7fc;">Section Name:</th>
+              <td style="padding: 12px; border: 1px solid #dedede; font-size: 13px; font-weight: bold;">${params.section}</td>
+            </tr>
+            <tr>
+              <th style="padding: 12px; text-align: left; border: 1px solid #dedede; font-size: 13px; background-color: #f4f7fc;">Data Requested:</th>
+              <td style="padding: 12px; border: 1px solid #dedede; font-size: 13px; color: #1e3a8a;">${params.requestedData}</td>
+            </tr>
+          </table>
+          <p>You can add this to the master taxonomy catalog via the Settings panel.</p>
+        </div>
+        <div style="border-top: 1px solid #e2e8f0; padding-top: 12px; text-align: center; font-size: 11px; color: #94a3b8;">
+          © ${new Date().getFullYear()} Zymr, Inc. Confidential Enterprise Engineering Services.
+        </div>
+      </div>
+    `;
+
+    return this.sendEmail({ to: adminEmail, subject, html });
+  }
 }

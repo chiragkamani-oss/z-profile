@@ -16,3 +16,11 @@ export async function PUT(
   const resolvedParams = await params;
   return ProfileController.updateProfile(req, { params: resolvedParams });
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const resolvedParams = await params;
+  return ProfileController.deleteProfile(req, { params: resolvedParams });
+}

@@ -16,6 +16,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,12 +38,12 @@ import {
   Sliders,
   Plus,
   Trash2,
-  Save,
   Loader2,
   Award,
   Layers,
   GraduationCap,
   Briefcase,
+  Edit3,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { PageTitle } from "@/components/layout/page-title";
@@ -71,6 +79,31 @@ export default function SettingsPage() {
   const [newDegree, setNewDegree] = useState("");
   const [newCourse, setNewCourse] = useState("");
 
+  // User Management Modals
+  const [addUserOpen, setAddUserOpen] = useState(false);
+  const [isSubmittingUser, setIsSubmittingUser] = useState(false);
+  const [newUsername, setNewUsername] = useState("");
+  const [newDisplayName, setNewDisplayName] = useState("");
+  const [newUserEmail, setNewUserEmail] = useState("");
+  const [newUserPassword, setNewUserPassword] = useState("");
+  const [newUserRole, setNewUserRole] = useState("engineer");
+  const [newUserCanShare, setNewUserCanShare] = useState(false);
+
+  // Edit User State
+  const [editUserOpen, setEditUserOpen] = useState(false);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [editDisplayName, setEditDisplayName] = useState("");
+  const [editUserEmail, setEditUserEmail] = useState("");
+  const [editUserPassword, setEditUserPassword] = useState("");
+  const [editUserRole, setEditUserRole] = useState("engineer");
+  const [editUserCanShare, setEditUserCanShare] = useState(false);
+  const [isUpdatingUser, setIsUpdatingUser] = useState(false);
+
+  // Delete User State
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<UserItem | null>(null);
+  const [isDeletingUser, setIsDeletingUser] = useState(false);
+
   useEffect(() => {
     fetchUsers();
     fetchConfig();
@@ -90,6 +123,116 @@ export default function SettingsPage() {
       setError("Network error while loading users");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingUser(true);
+    try {
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: newUsername,
+          displayName: newDisplayName,
+          email: newUserEmail,
+          password: newUserPassword,
+          role: newUserRole,
+          canShareProfile: newUserCanShare,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(`User "${newUsername}" created successfully!`);
+        setAddUserOpen(false);
+        setNewUsername("");
+        setNewDisplayName("");
+        setNewUserEmail("");
+        setNewUserPassword("");
+        setNewUserRole("engineer");
+        setNewUserCanShare(false);
+        fetchUsers();
+      } else {
+        toast.error(data.error?.message || "Failed to create user");
+      }
+    } catch {
+      toast.error("Network error while creating user");
+    } finally {
+      setIsSubmittingUser(false);
+    }
+  };
+
+  const openEditUser = (user: UserItem) => {
+    setEditingUserId(user.id);
+    setEditDisplayName(user.displayName);
+    setEditUserEmail(user.email);
+    setEditUserPassword("");
+    setEditUserRole(user.role);
+    setEditUserCanShare(user.canShareProfile);
+    setEditUserOpen(true);
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUserId) return;
+    setIsUpdatingUser(true);
+    try {
+      const payload: Record<string, unknown> = {
+        displayName: editDisplayName,
+        email: editUserEmail,
+        role: editUserRole,
+        canShareProfile: editUserCanShare,
+      };
+      if (editUserPassword.trim()) {
+        payload.password = editUserPassword.trim();
+      }
+
+      const res = await fetch(`/api/users/${editingUserId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("User account updated successfully!");
+        setEditUserOpen(false);
+        fetchUsers();
+      } else {
+        toast.error(data.error?.message || "Failed to update user");
+      }
+    } catch {
+      toast.error("Network error while updating user");
+    } finally {
+      setIsUpdatingUser(false);
+    }
+  };
+
+  const openDeleteConfirm = (user: UserItem) => {
+    setUserToDelete(user);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+    setIsDeletingUser(true);
+    try {
+      const res = await fetch(`/api/users/${userToDelete.id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(`User "${userToDelete.displayName}" deleted successfully.`);
+        setDeleteConfirmOpen(false);
+        setUserToDelete(null);
+        fetchUsers();
+      } else {
+        toast.error(data.error?.message || "Failed to delete user");
+      }
+    } catch {
+      toast.error("Network error while deleting user");
+    } finally {
+      setIsDeletingUser(false);
     }
   };
 
@@ -215,6 +358,12 @@ export default function SettingsPage() {
         return <Badge variant="warning">Manager</Badge>;
       case "partner":
         return <Badge variant="secondary">Partner</Badge>;
+      case "sales-person":
+        return (
+          <Badge className="border-purple-200 bg-purple-100 text-purple-800">
+            Sales Person
+          </Badge>
+        );
       default:
         return <Badge variant="outline">Engineer</Badge>;
     }
@@ -222,18 +371,19 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <PageTitle title="Admin & Configuration" />
+      <PageTitle title="Enterprise Configuration" />
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Platform Administration</h1>
+        <h1 className="text-2xl font-bold tracking-tight">System Settings & RBAC</h1>
         <p className="text-muted-foreground">
-          Manage system users, access roles, and master profile taxonomies.
+          Manage user accounts, role-based access permissions, and master taxonomy
+          configurations.
         </p>
       </div>
 
       <Tabs defaultValue="rbac" className="space-y-6">
-        <TabsList>
+        <TabsList className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="rbac" className="gap-2">
-            <ShieldCheck className="h-4 w-4" />
+            <Users className="h-4 w-4" />
             User Accounts & RBAC
           </TabsTrigger>
           <TabsTrigger value="taxonomies" className="gap-2">
@@ -293,10 +443,18 @@ export default function SettingsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">User Directory & Role Mapping</CardTitle>
-              <CardDescription>
-                Lists all registered accounts and assigned role privileges.
-              </CardDescription>
+              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                <div>
+                  <CardTitle className="text-lg">User Directory & Role Mapping</CardTitle>
+                  <CardDescription>
+                    Lists all registered accounts and assigned role privileges.
+                  </CardDescription>
+                </div>
+                <Button className="gap-2 shadow-xs" onClick={() => setAddUserOpen(true)}>
+                  <Plus className="h-4 w-4" />
+                  Add User
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               {error && (
@@ -314,19 +472,20 @@ export default function SettingsPage() {
                     <TableHead>Assigned Role</TableHead>
                     <TableHead>Can Share / Export</TableHead>
                     <TableHead>Joined Date</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="h-24 text-center">
+                      <TableCell colSpan={8} className="h-24 text-center">
                         <Loader2 className="mx-auto h-5 w-5 animate-spin text-primary" />
                       </TableCell>
                     </TableRow>
                   ) : users.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={7}
+                        colSpan={8}
                         className="h-24 text-center text-muted-foreground"
                       >
                         No users found.
@@ -358,6 +517,28 @@ export default function SettingsPage() {
                           suppressHydrationWarning
                         >
                           {formatDate(u.registered)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 hover:text-primary"
+                              onClick={() => openEditUser(u)}
+                              title="Edit User Account"
+                            >
+                              <Edit3 className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                              onClick={() => openDeleteConfirm(u)}
+                              title="Delete User"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
@@ -674,6 +855,234 @@ export default function SettingsPage() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Add User Dialog */}
+      <Dialog open={addUserOpen} onOpenChange={setAddUserOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              Add New User Account
+            </DialogTitle>
+            <DialogDescription>
+              Create a new user account with assigned RBAC system privileges.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCreateUser} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="newUsername">Username *</Label>
+              <Input
+                id="newUsername"
+                required
+                placeholder="e.g. john.doe"
+                value={newUsername}
+                onChange={(e) => setNewUsername(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="newDisplayName">Full Display Name *</Label>
+              <Input
+                id="newDisplayName"
+                required
+                placeholder="e.g. John Doe"
+                value={newDisplayName}
+                onChange={(e) => setNewDisplayName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="newUserEmail">Corporate Email *</Label>
+              <Input
+                id="newUserEmail"
+                type="email"
+                required
+                placeholder="john.doe@zymr.com"
+                value={newUserEmail}
+                onChange={(e) => setNewUserEmail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="newUserPassword">Initial Password *</Label>
+              <Input
+                id="newUserPassword"
+                type="password"
+                required
+                placeholder="Minimum 6 characters"
+                value={newUserPassword}
+                onChange={(e) => setNewUserPassword(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="newUserRole">System Role *</Label>
+              <select
+                id="newUserRole"
+                value={newUserRole}
+                onChange={(e) => setNewUserRole(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs focus:outline-none focus:ring-1 focus:ring-ring"
+              >
+                <option value="engineer">
+                  Engineer (Self-service profile authoring)
+                </option>
+                <option value="manager">Manager (Profile review & approval)</option>
+                <option value="partner">Partner (Consultant profile access)</option>
+                <option value="sales-person">
+                  Sales Person (Client sharing & PDF export)
+                </option>
+                <option value="administrator">Administrator (Full system control)</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2 pt-2">
+              <input
+                type="checkbox"
+                id="newUserCanShare"
+                checked={newUserCanShare}
+                onChange={(e) => setNewUserCanShare(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <Label htmlFor="newUserCanShare" className="text-xs text-muted-foreground">
+                Grant client portfolio sharing & export capabilities (`share_zpp_profile`)
+              </Label>
+            </div>
+            <DialogFooter className="pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setAddUserOpen(false)}
+                disabled={isSubmittingUser}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmittingUser}>
+                {isSubmittingUser && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Create User
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={editUserOpen} onOpenChange={setEditUserOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit3 className="h-5 w-5 text-primary" />
+              Edit User Account
+            </DialogTitle>
+            <DialogDescription>
+              Update display name, email, role, or reset account password.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleUpdateUser} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="editDisplayName">Display Name *</Label>
+              <Input
+                id="editDisplayName"
+                required
+                value={editDisplayName}
+                onChange={(e) => setEditDisplayName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editUserEmail">Email Address *</Label>
+              <Input
+                id="editUserEmail"
+                type="email"
+                required
+                value={editUserEmail}
+                onChange={(e) => setEditUserEmail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editUserPassword">
+                New Password (leave blank to keep current)
+              </Label>
+              <Input
+                id="editUserPassword"
+                type="password"
+                placeholder="Enter new password if changing"
+                value={editUserPassword}
+                onChange={(e) => setEditUserPassword(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editUserRole">System Role</Label>
+              <select
+                id="editUserRole"
+                value={editUserRole}
+                onChange={(e) => setEditUserRole(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs focus:outline-none focus:ring-1 focus:ring-ring"
+              >
+                <option value="engineer">Engineer</option>
+                <option value="manager">Manager</option>
+                <option value="partner">Partner</option>
+                <option value="sales-person">Sales Person</option>
+                <option value="administrator">Administrator</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2 pt-2">
+              <input
+                type="checkbox"
+                id="editUserCanShare"
+                checked={editUserCanShare}
+                onChange={(e) => setEditUserCanShare(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <Label htmlFor="editUserCanShare" className="text-xs text-muted-foreground">
+                Grant client portfolio sharing & export capabilities (`share_zpp_profile`)
+              </Label>
+            </div>
+            <DialogFooter className="pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setEditUserOpen(false)}
+                disabled={isUpdatingUser}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isUpdatingUser}>
+                {isUpdatingUser && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete User Confirmation */}
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <Trash2 className="h-5 w-5" />
+              Confirm User Deletion
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to permanently delete user account{" "}
+              <strong>{userToDelete?.displayName}</strong> (@{userToDelete?.username})?
+              This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDeleteConfirmOpen(false)}
+              disabled={isDeletingUser}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteUser}
+              disabled={isDeletingUser}
+            >
+              {isDeletingUser && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Delete Account
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

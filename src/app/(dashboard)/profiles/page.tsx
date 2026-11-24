@@ -13,7 +13,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Search, Eye, Sparkles, Filter, Loader2, Copy } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Plus,
+  Search,
+  Eye,
+  Sparkles,
+  Filter,
+  Loader2,
+  Copy,
+  Edit3,
+  Trash2,
+} from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
 import { PageTitle } from "@/components/layout/page-title";
@@ -36,6 +54,11 @@ export default function ProfilesPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
+
+  // Delete State
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [profileToDelete, setProfileToDelete] = useState<ProfileItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchProfiles();
@@ -85,6 +108,34 @@ export default function ProfilesPage() {
       toast.error("Network error while duplicating profile");
     } finally {
       setDuplicatingId(null);
+    }
+  };
+
+  const openDeleteConfirm = (profile: ProfileItem) => {
+    setProfileToDelete(profile);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteProfile = async () => {
+    if (!profileToDelete) return;
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/profiles/${profileToDelete.ID}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(`Profile "${profileToDelete.post_title}" deleted successfully.`);
+        setDeleteConfirmOpen(false);
+        setProfileToDelete(null);
+        fetchProfiles(search);
+      } else {
+        toast.error(data.error?.message || "Failed to delete profile");
+      }
+    } catch {
+      toast.error("Network error while deleting profile");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -235,6 +286,17 @@ export default function ProfilesPage() {
                           View
                         </Button>
                       </Link>
+                      <Link href={`/profiles/${profile.ID}/edit`}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 gap-1 text-xs hover:text-primary"
+                          title="Edit Profile"
+                        >
+                          <Edit3 className="h-3.5 w-3.5" />
+                          Edit
+                        </Button>
+                      </Link>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -250,6 +312,15 @@ export default function ProfilesPage() {
                         )}
                         Clone
                       </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openDeleteConfirm(profile)}
+                        className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                        title="Delete Profile"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -258,6 +329,41 @@ export default function ProfilesPage() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <Trash2 className="h-5 w-5" />
+              Confirm Profile Deletion
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to permanently delete profile{" "}
+              <strong>"{profileToDelete?.post_title}"</strong>? This action cannot be
+              undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDeleteConfirmOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteProfile}
+              disabled={isDeleting}
+            >
+              {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Delete Profile
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

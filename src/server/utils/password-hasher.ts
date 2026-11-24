@@ -104,3 +104,12 @@ export function verifyWordPressPassword(
 
   return false;
 }
+
+/**
+ * Hash a password using bcrypt with standard salt rounds.
+ * Generated hashes start with $2a$ or $2b$, which are natively verified
+ * by verifyWordPressPassword.
+ */
+export function hashPassword(plainPassword: string): string {
+  return bcrypt.hashSync(plainPassword, 10);
+}
