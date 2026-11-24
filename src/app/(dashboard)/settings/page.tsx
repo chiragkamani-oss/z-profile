@@ -30,9 +30,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
-  ShieldCheck,
   Users,
-  Lock,
   CheckCircle2,
   XCircle,
   Sliders,
@@ -394,60 +392,14 @@ export default function SettingsPage() {
 
         {/* Tab 1: User Accounts & RBAC */}
         <TabsContent value="rbac" className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  RBAC Security Policy
-                </CardTitle>
-                <ShieldCheck className="h-4 w-4 text-emerald-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-sm font-semibold">Strict Data Isolation</div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Engineers & Partners strictly restricted to their own author IDs.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Authentication Engine
-                </CardTitle>
-                <Lock className="h-4 w-4 text-blue-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-sm font-semibold">Multi-Format Password Hasher</div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Bcrypt, WordPress phpass, and MD5 verified with constant-time equality.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Registered Users
-                </CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{users.length || "--"}</div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Active directory accounts
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
           <Card>
             <CardHeader>
               <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
                   <CardTitle className="text-lg">User Directory & Role Mapping</CardTitle>
                   <CardDescription>
-                    Lists all registered accounts and assigned role privileges.
+                    Manage enterprise user accounts, assigned roles, and access privileges
+                    ({users.length} registered accounts).
                   </CardDescription>
                 </div>
                 <Button className="gap-2 shadow-xs" onClick={() => setAddUserOpen(true)}>
