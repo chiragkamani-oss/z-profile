@@ -224,7 +224,7 @@ export default function ProfileDetailPage({
                 size="sm"
                 disabled={actionLoading}
                 onClick={() => handleStatusChange("in_review")}
-                className="shadow-xs gap-2"
+                className="gap-2 shadow-xs"
               >
                 <Send className="h-3.5 w-3.5" />
                 Submit for Review
@@ -239,7 +239,7 @@ export default function ProfileDetailPage({
                   size="sm"
                   disabled={actionLoading}
                   onClick={() => handleStatusChange("is_ready")}
-                  className="shadow-xs gap-1.5 bg-emerald-600 text-white hover:bg-emerald-700"
+                  className="gap-1.5 bg-emerald-600 text-white shadow-xs hover:bg-emerald-700"
                 >
                   <CheckCircle2 className="h-3.5 w-3.5" />
                   Approve Profile
@@ -250,7 +250,7 @@ export default function ProfileDetailPage({
                 variant="destructive"
                 disabled={actionLoading}
                 onClick={() => setFeedbackDialogOpen(true)}
-                className="shadow-xs gap-1.5"
+                className="gap-1.5 shadow-xs"
               >
                 <AlertTriangle className="h-3.5 w-3.5" />
                 Request Changes

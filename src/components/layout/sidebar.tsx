@@ -179,7 +179,7 @@ export function Sidebar() {
                       ? "gap-3 px-3 py-2.5"
                       : "h-11 w-full justify-center p-0",
                     isActive
-                      ? "shadow-xs bg-primary/10 font-semibold text-primary"
+                      ? "bg-primary/10 font-semibold text-primary shadow-xs"
                       : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                   )}
                 >
@@ -209,14 +209,14 @@ export function Sidebar() {
         <div className="shrink-0 border-t border-border/50 p-3">
           {!isVisuallyExpanded ? (
             <div className="flex justify-center" title={`${user?.name} (${user?.role})`}>
-              <Avatar className="shadow-xs h-9 w-9 ring-1 ring-border/80">
+              <Avatar className="h-9 w-9 shadow-xs ring-1 ring-border/80">
                 <AvatarFallback className="text-xs font-bold">{initials}</AvatarFallback>
               </Avatar>
             </div>
           ) : (
             <div className="rounded-xl border border-border/60 bg-muted/30 p-3 transition-colors">
               <div className="flex items-center gap-3">
-                <Avatar className="shadow-xs h-9 w-9 ring-1 ring-border/80">
+                <Avatar className="h-9 w-9 shadow-xs ring-1 ring-border/80">
                   <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">

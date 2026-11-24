@@ -96,7 +96,7 @@ export default function ProfilesPage() {
           </p>
         </div>
         <Link href="/profiles/new">
-          <Button className="shadow-xs gap-2 font-semibold">
+          <Button className="gap-2 font-semibold shadow-xs">
             <Plus className="h-4 w-4" />
             Build Profile
           </Button>
@@ -104,7 +104,7 @@ export default function ProfilesPage() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="shadow-xs flex flex-col items-center gap-3 rounded-xl border border-border bg-card p-3 md:flex-row">
+      <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card p-3 shadow-xs md:flex-row">
         <form onSubmit={handleSearch} className="flex w-full flex-1 gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />

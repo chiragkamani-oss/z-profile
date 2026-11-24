@@ -121,7 +121,7 @@ export default function ClientsPage() {
             Manage enterprise client accounts and project assignments.
           </p>
         </div>
-        <Button className="shadow-xs gap-2" onClick={() => setDialogOpen(true)}>
+        <Button className="gap-2 shadow-xs" onClick={() => setDialogOpen(true)}>
           <Plus className="h-4 w-4" />
           Add Client
         </Button>
@@ -273,7 +273,7 @@ export default function ClientsPage() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="shadow-xs font-semibold"
+                className="font-semibold shadow-xs"
               >
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create Client
