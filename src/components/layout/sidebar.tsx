@@ -177,11 +177,6 @@ export function Sidebar() {
 
         {/* Navigation Items (Independently Scrollable with Sleek Scrollbar) */}
         <div className="flex-1 overflow-y-auto px-2.5 py-4">
-          {isVisuallyExpanded && (
-            <p className="whitespace-nowrap px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 opacity-100 transition-opacity delay-75 duration-200">
-              Platform Menu
-            </p>
-          )}
           <nav className="space-y-1">
             {filteredNavItems.map((item) => {
               const Icon = item.icon;
