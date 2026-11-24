@@ -62,9 +62,9 @@
     --popover: 224 71.4% 6.5%;
     --popover-foreground: 210 20% 98%;
 
-    /* Brand Primary (Zymr Corporate Blue in Dark Mode - High Contrast Vivid Blue) */
-    --primary: 216 95% 62%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    /* Brand Primary (Zymr Corporate Blue in Dark Mode - Balanced & Crisp) */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
 
     /* Secondary / Subdued */
     --secondary: 217.2 32.6% 15%;

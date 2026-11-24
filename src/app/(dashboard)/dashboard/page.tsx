@@ -100,23 +100,28 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
-      <div className="flex flex-col gap-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-primary p-6 text-white shadow-md shadow-blue-500/10 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight">
-            Welcome back, {session?.user?.name || "Team Member"}!
-          </h1>
-          <p className="max-w-xl text-sm text-blue-100">
-            Zprofile Talent Management Platform. View your profile status, manage
-            enterprise clients, and export client-ready talent portfolios.
-          </p>
-        </div>
-        <div className="flex shrink-0 items-center gap-3">
-          <Link href="/profiles/new">
-            <Button className="shadow-xs bg-white font-semibold text-blue-600 hover:bg-blue-50">
-              <Plus className="mr-2 h-4 w-4" />
-              Build Profile
-            </Button>
-          </Link>
+      <div className="relative overflow-hidden rounded-2xl border border-blue-600/10 bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white shadow-md dark:border-blue-500/20 dark:bg-gradient-to-r dark:from-card dark:via-blue-950/30 dark:to-card dark:text-foreground dark:shadow-none">
+        {/* Subtle decorative glow in dark mode */}
+        <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-500/15" />
+
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold tracking-tight text-white dark:text-foreground">
+              Welcome back, {session?.user?.name || "Team Member"}!
+            </h1>
+            <p className="max-w-xl text-sm text-blue-100 dark:text-muted-foreground">
+              Zprofile Talent Management Platform. View your profile status, manage
+              enterprise clients, and export client-ready talent portfolios.
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-3">
+            <Link href="/profiles/new">
+              <Button className="bg-white font-semibold text-blue-700 shadow-sm hover:bg-blue-50 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90">
+                <Plus className="mr-2 h-4 w-4" />
+                Build Profile
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
