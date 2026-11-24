@@ -42,19 +42,19 @@ export function Sidebar() {
   const handleMouseEnter = () => {
     if (!isCollapsed) return;
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
-    // Wait 0.5 seconds (500ms) before starting expansion
+    // Reduced hover delay to 180ms for snappy, instant response
     hoverTimeoutRef.current = setTimeout(() => {
       setIsHovered(true);
-    }, 500);
+    }, 180);
   };
 
   const handleMouseLeave = () => {
     if (!isCollapsed) return;
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
-    // Graceful 160ms exit delay so cursor wobbles don't collapse abruptly
+    // 120ms exit transition
     hoverTimeoutRef.current = setTimeout(() => {
       setIsHovered(false);
-    }, 160);
+    }, 120);
   };
 
   const toggleCollapse = () => {
@@ -114,7 +114,7 @@ export function Sidebar() {
     <div
       className={cn("relative shrink-0", isCollapsed ? "w-[72px]" : "w-64")}
       style={{
-        transition: "width 360ms cubic-bezier(0.2, 0, 0, 1)",
+        transition: "width 240ms cubic-bezier(0.16, 1, 0.3, 1)",
       }}
     >
       <aside
@@ -130,24 +130,31 @@ export function Sidebar() {
         )}
         style={{
           transition:
-            "width 360ms cubic-bezier(0.2, 0, 0, 1), box-shadow 360ms cubic-bezier(0.2, 0, 0, 1)",
+            "width 240ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 240ms cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       >
-        {/* Brand Header */}
-        <div className="flex h-16 shrink-0 items-center justify-between border-b border-border/50 px-4">
+        {/* Brand Header - Zero Horizontal Displacement */}
+        <div className="flex h-16 shrink-0 items-center border-b border-border/50 px-4">
           <Link
             href="/dashboard"
-            className={cn(
-              "flex items-center gap-2.5 overflow-hidden whitespace-nowrap font-bold tracking-tight",
-              !isVisuallyExpanded && "w-full justify-center"
-            )}
+            className="flex items-center overflow-hidden whitespace-nowrap font-bold tracking-tight"
             title="Zprofile Talent Platform"
           >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-sm shadow-blue-500/20">
+            {/* Fixed Logo Anchor: Stays locked at 16px from left edge */}
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-sm shadow-blue-500/20">
               <span className="text-sm font-extrabold">Z</span>
             </div>
-            {isVisuallyExpanded && (
-              <div className="flex flex-col opacity-100 transition-opacity delay-75 duration-200">
+
+            {/* Sliding text label */}
+            <div
+              className={cn(
+                "overflow-hidden whitespace-nowrap transition-all duration-300 ease-out",
+                isVisuallyExpanded
+                  ? "ml-3 max-w-[140px] opacity-100"
+                  : "max-w-0 opacity-0"
+              )}
+            >
+              <div className="flex flex-col">
                 <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-primary bg-clip-text text-sm font-bold text-transparent">
                   Zprofile
                 </span>
@@ -155,15 +162,23 @@ export function Sidebar() {
                   Talent Hub
                 </span>
               </div>
-            )}
+            </div>
           </Link>
 
-          {isVisuallyExpanded && (
+          {/* Toggle Button */}
+          <div
+            className={cn(
+              "ml-auto overflow-hidden transition-all duration-300 ease-out",
+              isVisuallyExpanded
+                ? "max-w-[32px] opacity-100"
+                : "pointer-events-none max-w-0 opacity-0"
+            )}
+          >
             <Button
               variant="ghost"
               size="sm"
               onClick={toggleCollapse}
-              className="h-7 w-7 p-0 text-muted-foreground opacity-100 transition-opacity delay-75 duration-200 hover:text-foreground"
+              className="h-7 w-7 shrink-0 p-0 text-muted-foreground hover:text-foreground"
               title={isCollapsed ? "Pin Sidebar Open" : "Collapse to Hover Rail"}
             >
               {isCollapsed ? (
@@ -172,12 +187,12 @@ export function Sidebar() {
                 <PanelLeftClose className="h-4 w-4" />
               )}
             </Button>
-          )}
+          </div>
         </div>
 
-        {/* Navigation Items (Independently Scrollable with Sleek Scrollbar) */}
-        <div className="flex-1 overflow-y-auto px-2.5 py-4">
-          <nav className="space-y-1">
+        {/* Navigation Items - Zero Horizontal Displacement Anchor */}
+        <div className="flex-1 space-y-1.5 overflow-y-auto px-3.5 py-4">
+          <nav className="space-y-1.5">
             {filteredNavItems.map((item) => {
               const Icon = item.icon;
               const isActive =
@@ -190,32 +205,39 @@ export function Sidebar() {
                   href={item.href}
                   title={!isVisuallyExpanded ? item.title : undefined}
                   className={cn(
-                    "group relative flex items-center whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-150",
-                    isVisuallyExpanded
-                      ? "gap-3 px-3 py-2.5"
-                      : "h-11 w-full justify-center p-0",
+                    "group relative flex h-11 w-full items-center rounded-xl px-1 transition-colors duration-150",
                     isActive
                       ? "bg-primary/10 font-semibold text-primary shadow-xs"
                       : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                   )}
                 >
-                  <Icon
-                    className={cn(
-                      "h-4 w-4 shrink-0 transition-colors",
-                      isActive
-                        ? "text-primary"
-                        : "text-muted-foreground group-hover:text-foreground"
-                    )}
-                  />
-                  {isVisuallyExpanded && (
-                    <>
-                      <span className="truncate opacity-100 transition-opacity delay-75 duration-200">
-                        {item.title}
-                      </span>
-                      {isActive && (
-                        <span className="absolute right-2 h-1.5 w-1.5 rounded-full bg-primary" />
+                  {/* Fixed Icon Anchor: 36px x 36px slot. Sits at the EXACT SAME X-coordinate in both states! */}
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
+                    <Icon
+                      className={cn(
+                        "h-5 w-5 shrink-0 transition-colors",
+                        isActive
+                          ? "text-primary"
+                          : "text-muted-foreground group-hover:text-foreground"
                       )}
-                    </>
+                    />
+                  </div>
+
+                  {/* Text Label: Unfurls cleanly to the right without ever displacing the icon! */}
+                  <div
+                    className={cn(
+                      "overflow-hidden whitespace-nowrap transition-all duration-300 ease-out",
+                      isVisuallyExpanded
+                        ? "ml-3 max-w-[150px] opacity-100"
+                        : "max-w-0 opacity-0"
+                    )}
+                  >
+                    <span className="text-sm font-medium">{item.title}</span>
+                  </div>
+
+                  {/* Active Indicator Dot */}
+                  {isActive && isVisuallyExpanded && (
+                    <span className="absolute right-3 h-1.5 w-1.5 rounded-full bg-primary" />
                   )}
                 </Link>
               );
@@ -223,45 +245,34 @@ export function Sidebar() {
           </nav>
         </div>
 
-        {/* User Footer Panel */}
+        {/* User Footer Panel - Zero Horizontal Displacement Anchor */}
         <div className="shrink-0 border-t border-border/50 p-3">
-          {!isVisuallyExpanded ? (
-            <div className="flex justify-center" title={`${user?.name} (${user?.role})`}>
-              <Avatar className="h-9 w-9 shadow-xs ring-1 ring-border/80">
-                <AvatarFallback className="text-xs font-bold">{initials}</AvatarFallback>
-              </Avatar>
+          <div
+            className={cn(
+              "flex items-center rounded-xl p-1 transition-colors",
+              isVisuallyExpanded && "border border-border/60 bg-muted/30 p-2.5"
+            )}
+          >
+            {/* Fixed Avatar Anchor: Stays permanently locked in place! */}
+            <Avatar className="h-9 w-9 shrink-0 shadow-xs ring-1 ring-border/80">
+              <AvatarFallback className="text-xs font-bold">{initials}</AvatarFallback>
+            </Avatar>
+
+            {/* User Details: Glides open to the right */}
+            <div
+              className={cn(
+                "min-w-0 flex-1 overflow-hidden whitespace-nowrap transition-all duration-300 ease-out",
+                isVisuallyExpanded
+                  ? "ml-3 max-w-[140px] opacity-100"
+                  : "max-w-0 opacity-0"
+              )}
+            >
+              <p className="truncate text-xs font-semibold text-foreground">
+                {user?.name || "User Account"}
+              </p>
+              <p className="truncate text-[11px] text-muted-foreground">{user?.email}</p>
             </div>
-          ) : (
-            <div className="rounded-xl border border-border/60 bg-muted/30 p-3 transition-opacity delay-75 duration-200">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-9 w-9 shrink-0 shadow-xs ring-1 ring-border/80">
-                  <AvatarFallback>{initials}</AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1 whitespace-nowrap">
-                  <p className="truncate text-xs font-semibold text-foreground">
-                    {user?.name || "User Account"}
-                  </p>
-                  <p className="truncate text-[11px] text-muted-foreground">
-                    {user?.email}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-2.5 flex items-center justify-between border-t border-border/40 pt-2">
-                <span className="flex items-center gap-1 whitespace-nowrap text-[10px] font-medium text-muted-foreground">
-                  <Sparkles className="h-3 w-3 text-primary" />
-                  Role Access
-                </span>
-                {user?.role && (
-                  <Badge
-                    variant="secondary"
-                    className="h-4.5 py-0 text-[10px] font-bold uppercase"
-                  >
-                    {user.role}
-                  </Badge>
-                )}
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       </aside>
     </div>
