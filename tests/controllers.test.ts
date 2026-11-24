@@ -283,6 +283,7 @@ describe("Controllers Suite", () => {
       const data = await res.json();
 
       expect(res.status).toBe(200);
+      expect(data.data.ID).toBe("100");
       expect(ProfileService.getProfileById).toHaveBeenCalledWith(100, undefined);
     });
 

@@ -16,7 +16,7 @@ export class ClientController {
     return session.user as CurrentUser;
   }
 
-  static async listClients(req: NextRequest) {
+  static async listClients(_req: NextRequest) {
     try {
       const user = await this.getSessionUser();
       const clients = await ClientService.listClients(user);
@@ -27,7 +27,7 @@ export class ClientController {
   }
 
   static async getClientById(
-    req: NextRequest,
+    _req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
   ) {
     try {
@@ -75,7 +75,7 @@ export class ClientController {
   }
 
   static async deleteClient(
-    req: NextRequest,
+    _req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
   ) {
     try {

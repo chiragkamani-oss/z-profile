@@ -25,7 +25,6 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
-  CheckCircle2,
   FileText,
   FolderGit2,
   GraduationCap,

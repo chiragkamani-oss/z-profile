@@ -11,11 +11,9 @@ import {
   Building2,
   FolderKanban,
   Settings,
-  Sparkles,
   PanelLeftClose,
   Pin,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 
@@ -26,11 +24,9 @@ export function Sidebar() {
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    setMounted(true);
     const saved = localStorage.getItem("zprofile_sidebar_collapsed");
     if (saved === "true") {
       setIsCollapsed(true);

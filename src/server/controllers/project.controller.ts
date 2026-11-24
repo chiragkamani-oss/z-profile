@@ -32,7 +32,7 @@ export class ProjectController {
   }
 
   static async getProjectById(
-    req: NextRequest,
+    _req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
   ) {
     try {
@@ -80,7 +80,7 @@ export class ProjectController {
   }
 
   static async deleteProject(
-    req: NextRequest,
+    _req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
   ) {
     try {

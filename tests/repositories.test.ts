@@ -233,6 +233,7 @@ describe("Repositories Suite", () => {
       });
 
       const res = await ProfileRepository.duplicate(32, 2);
+      expect(res?.post_title).toBe("Jane Doe Senior Architect ver02");
       expect(prisma.wp_posts.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({

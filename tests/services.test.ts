@@ -5,7 +5,7 @@ import { ProfileService } from "@/server/services/profile.service";
 import { ProfileRepository } from "@/server/repositories/profile.repository";
 import { EmailService } from "@/server/services/email.service";
 import { prisma } from "@/lib/prisma";
-import { NotFoundError, ForbiddenError, BadRequestError } from "@/server/utils/errors";
+import { NotFoundError, ForbiddenError } from "@/server/utils/errors";
 
 jest.mock("@/lib/prisma", () => ({
   prisma: {

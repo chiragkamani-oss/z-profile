@@ -33,7 +33,7 @@ export class ProfileController {
     }
   }
 
-  static async getProfileById(req: NextRequest, { params }: { params: { id: string } }) {
+  static async getProfileById(_req: NextRequest, { params }: { params: { id: string } }) {
     try {
       const session = await getServerSession(authOptions);
       const user = session?.user as CurrentUser | undefined;
@@ -86,7 +86,7 @@ export class ProfileController {
     }
   }
 
-  static async deleteProfile(req: NextRequest, { params }: { params: { id: string } }) {
+  static async deleteProfile(_req: NextRequest, { params }: { params: { id: string } }) {
     try {
       const user = await this.getSessionUser();
       const id = parseInt(params.id, 10);

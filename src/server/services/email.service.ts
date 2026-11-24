@@ -33,7 +33,7 @@ export class EmailService {
     const transporter = this.getTransporter();
 
     if (!transporter) {
-      console.log(
+      console.info(
         `[EmailService:MockDelivery] To: ${to} | Subject: "${subject}" (SMTP credentials not configured in environment)`
       );
       return { success: true, mock: true };
@@ -46,7 +46,7 @@ export class EmailService {
         subject,
         html,
       });
-      console.log(`[EmailService] Email sent successfully: ${info.messageId}`);
+      console.info(`[EmailService] Email sent successfully: ${info.messageId}`);
       return { success: true, messageId: info.messageId };
     } catch (error) {
       console.error("[EmailService] Failed to send email:", error);

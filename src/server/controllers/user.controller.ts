@@ -18,7 +18,7 @@ export class UserController {
     return session.user;
   }
 
-  static async listUsers(req: NextRequest) {
+  static async listUsers(_req: NextRequest) {
     try {
       await this.getAdminSession();
       const users = await UserRepository.findMany();
@@ -28,7 +28,7 @@ export class UserController {
     }
   }
 
-  static async getUserById(req: NextRequest, { params }: { params: { id: string } }) {
+  static async getUserById(_req: NextRequest, { params }: { params: { id: string } }) {
     try {
       await this.getAdminSession();
       const id = parseInt(params.id, 10);
@@ -72,7 +72,7 @@ export class UserController {
     }
   }
 
-  static async deleteUser(req: NextRequest, { params }: { params: { id: string } }) {
+  static async deleteUser(_req: NextRequest, { params }: { params: { id: string } }) {
     try {
       const sessionUser = await this.getAdminSession();
       const id = parseInt(params.id, 10);

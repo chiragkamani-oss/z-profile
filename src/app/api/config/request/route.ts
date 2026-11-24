@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { EmailService } from "@/server/services/email.service";
 import { successResponse, errorResponse } from "@/server/utils/api-response";
-import { UnauthorizedError, BadRequestError } from "@/server/utils/errors";
+import { UnauthorizedError } from "@/server/utils/errors";
 import { z } from "zod";
 
 const requestConfigSchema = z.object({

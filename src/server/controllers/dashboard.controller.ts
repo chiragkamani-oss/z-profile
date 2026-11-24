@@ -7,7 +7,7 @@ import { UnauthorizedError } from "../utils/errors";
 import { serializeBigInt } from "@/lib/utils";
 
 export class DashboardController {
-  static async getStats(req: NextRequest) {
+  static async getStats(_req: NextRequest) {
     try {
       const session = await getServerSession(authOptions);
       if (!session?.user) {

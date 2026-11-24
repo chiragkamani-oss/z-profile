@@ -110,7 +110,7 @@ export class ProfileRepository {
   }
 
   static async update(id: number, data: UpdateProfileInput) {
-    const post = await prisma.wp_posts.update({
+    await prisma.wp_posts.update({
       where: { ID: BigInt(id) },
       data: {
         ...(data.title ? { post_title: data.title } : {}),
@@ -241,7 +241,14 @@ export class ProfileRepository {
     }
 
     // Copy metadata excluding sharing logs and edit locks
-    const metaToCopy = original.postmeta
+    const sourceMeta = Array.isArray(original.postmeta)
+      ? (original.postmeta as Array<{
+          meta_key: string | null;
+          meta_value: string | null;
+        }>)
+      : [];
+
+    const metaToCopy = sourceMeta
       .filter(
         (m) =>
           m.meta_key && m.meta_key !== "share_with" && !m.meta_key.startsWith("_edit_")

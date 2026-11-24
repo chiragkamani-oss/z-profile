@@ -36,9 +36,7 @@ import {
   Edit3,
   Trash2,
   Cloud,
-  Layers,
   Building,
-  CheckCircle2,
 } from "lucide-react";
 import { PageTitle } from "@/components/layout/page-title";
 import { formatDate } from "@/lib/utils";
@@ -76,7 +74,7 @@ export default function ProjectsPage() {
   const [name, setName] = useState("");
   const [aliasName, setAliasName] = useState("");
   const [selectedClientId, setSelectedClientId] = useState("");
-  const [type, setType] = useState("Web Application");
+  const [type] = useState("Web Application");
   const [category, setCategory] = useState("Cloud Native");
   const [cloud, setCloud] = useState("AWS");
   const [solution, setSolution] = useState("");

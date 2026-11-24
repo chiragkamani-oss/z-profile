@@ -1,4 +1,4 @@
-import { createUserSchema, updateUserSchema } from "@/server/validators/user.schema";
+import { createUserSchema } from "@/server/validators/user.schema";
 import { UserRepository } from "@/server/repositories/user.repository";
 import { hashPassword, verifyWordPressPassword } from "@/server/utils/password-hasher";
 import { EmailService } from "@/server/services/email.service";

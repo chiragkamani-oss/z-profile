@@ -22,7 +22,6 @@ import {
   Plus,
   Eye,
   TrendingUp,
-  Building2,
   Cpu,
   ArrowRight,
   Loader2,

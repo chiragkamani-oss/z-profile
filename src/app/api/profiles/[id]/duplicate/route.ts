@@ -6,7 +6,7 @@ import { successResponse, errorResponse } from "@/server/utils/api-response";
 import { UnauthorizedError } from "@/server/utils/errors";
 
 export async function POST(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {

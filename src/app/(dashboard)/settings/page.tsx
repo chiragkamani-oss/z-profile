@@ -66,7 +66,6 @@ export default function SettingsPage() {
   // Config State
   const [config, setConfig] = useState<TaxonomyConfig | null>(null);
   const [configLoading, setConfigLoading] = useState(true);
-  const [isSavingConfig, setIsSavingConfig] = useState(false);
 
   // New tag inputs
   const [newLevel, setNewLevel] = useState("");
@@ -250,7 +249,6 @@ export default function SettingsPage() {
   };
 
   const handleSaveConfig = async (updatedConfig: TaxonomyConfig) => {
-    setIsSavingConfig(true);
     try {
       const res = await fetch("/api/config", {
         method: "PUT",
@@ -266,8 +264,6 @@ export default function SettingsPage() {
       }
     } catch {
       toast.error("Network error saving taxonomies");
-    } finally {
-      setIsSavingConfig(false);
     }
   };
 
