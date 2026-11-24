@@ -1,5 +1,6 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "@/lib/prisma";
 import { verifyWordPressPassword } from "@/server/utils/password-hasher";
 import { UserRepository } from "@/server/repositories/user.repository";
@@ -14,6 +15,22 @@ export const authOptions: NextAuthOptions = {
     error: "/login",
   },
   providers: [
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [
+          GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            allowDangerousEmailAccountLinking: true,
+          }),
+        ]
+      : [
+          GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID || "google-client-id-placeholder",
+            clientSecret:
+              process.env.GOOGLE_CLIENT_SECRET || "google-client-secret-placeholder",
+            allowDangerousEmailAccountLinking: true,
+          }),
+        ]),
     CredentialsProvider({
       name: "WordPress Credentials",
       credentials: {
@@ -65,11 +82,76 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider === "google") {
+        if (!user.email) return false;
+
+        // Lookup or auto-provision WordPress user account for Google SSO
+        let wpUser = await prisma.wp_users.findFirst({
+          where: { user_email: user.email },
+          include: { usermeta: true },
+        });
+
+        if (!wpUser) {
+          const emailPrefix = user.email.split("@")[0].replace(/[^a-zA-Z0-9._-]/g, "");
+          const userLogin = `${emailPrefix}_${Date.now().toString().slice(-4)}`;
+          wpUser = await prisma.wp_users.create({
+            data: {
+              user_login: userLogin,
+              user_pass: "",
+              user_nicename: user.name || userLogin,
+              user_email: user.email,
+              user_url: "",
+              user_registered: new Date(),
+              display_name: user.name || emailPrefix,
+              usermeta: {
+                create: [
+                  {
+                    meta_key: "wp_capabilities",
+                    meta_value: 'a:1:{s:8:"engineer";b:1;}',
+                  },
+                  {
+                    meta_key: "wp_user_level",
+                    meta_value: "1",
+                  },
+                ],
+              },
+            },
+            include: { usermeta: true },
+          });
+        }
+
+        const role = UserRepository.extractRoleFromMeta(wpUser.usermeta);
+        const canShareProfile = UserRepository.hasCapability(
+          wpUser.usermeta,
+          "share_zpp_profile"
+        );
+
+        user.id = wpUser.ID.toString();
+        (user as any).role = role;
+        (user as any).canShareProfile = canShareProfile;
+        return true;
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.role = (user as any).role;
         token.canShareProfile = (user as any).canShareProfile;
+      } else if (token.email && (!token.id || !token.role)) {
+        const wpUser = await prisma.wp_users.findFirst({
+          where: { user_email: token.email },
+          include: { usermeta: true },
+        });
+        if (wpUser) {
+          token.id = wpUser.ID.toString();
+          token.role = UserRepository.extractRoleFromMeta(wpUser.usermeta);
+          token.canShareProfile = UserRepository.hasCapability(
+            wpUser.usermeta,
+            "share_zpp_profile"
+          );
+        }
       }
       return token;
     },
