@@ -22,12 +22,13 @@ npm run prisma:pull            # Introspect/pull schema changes from existing My
 
 ## Mandatory Rules & Standards
 
-### 1. Security & Compliance (SonarQube & Trivy Standards)
+### 1. Security & Compliance (SonarQube, Trivy & DAST Standards)
 - **Zero Secrets in Code**: Never commit or hardcode database passwords, JWT secrets, or API keys. Always use environment variables (`process.env`) verified by `env.example`.
 - **Strict Input Validation**: Every API endpoint MUST validate request query parameters and body payloads with Zod schemas (`src/server/validators/`) before reaching services or repositories.
 - **Timing Attacks**: Use `timingSafeEqualStrings` from `src/server/utils/password-hasher.ts` when comparing passwords or secret tokens.
 - **Error Visibility & Sanitization**: Never leak raw SQL or stack traces to clients, but ALWAYS extract and surface specific human-readable Zod validation issue messages in `data.error.message` so frontend forms and toast notifications can show the user exactly what went wrong.
 - **Trivy Container Standard**: Keep the multi-stage `Dockerfile` running as unprivileged `nextjs:nodejs` on `node:20-alpine`.
+- **DAST & IDOR Enforcement**: Execute regular dynamic tests against live endpoints to verify horizontal privilege boundaries (engineers cannot read/modify other profiles) and vertical boundaries (admin endpoints reject non-admin sessions). Ensure OWASP defensive headers (CSP, HSTS, X-Frame-Options) and secure cookie flags (`HttpOnly; Secure; SameSite=Lax`) are active.
 
 ### 2. Architecture: Strict MVC Separation in Next.js
 - **View / Router**: `src/app/`
