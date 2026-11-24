@@ -839,6 +839,12 @@ export default function SettingsPage() {
                 <span>{addUserError}</span>
               </div>
             )}
+            {addUserError && (
+              <div className="flex items-start gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3 text-sm font-medium text-destructive">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{addUserError}</span>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="newUsername">Username *</Label>
               <Input
@@ -943,6 +949,12 @@ export default function SettingsPage() {
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleUpdateUser} className="space-y-4">
+            {editUserError && (
+              <div className="flex items-start gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3 text-sm font-medium text-destructive">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{editUserError}</span>
+              </div>
+            )}
             {editUserError && (
               <div className="flex items-start gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3 text-sm font-medium text-destructive">
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
