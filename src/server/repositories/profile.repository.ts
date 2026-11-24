@@ -214,6 +214,76 @@ export class ProfileRepository {
     return this.findById(id);
   }
 
+  static async duplicate(id: number, authorId: number) {
+    const original = await prisma.wp_posts.findFirst({
+      where: {
+        ID: BigInt(id),
+        post_type: "profile-builder",
+      },
+      include: {
+        postmeta: true,
+      },
+    });
+
+    if (!original) {
+      return null;
+    }
+
+    // Version title logic matching legacy format: e.g. ver01 -> ver02
+    let newTitle = original.post_title;
+    const verMatch = original.post_title.match(/\bver\s*(\d+)\b/i);
+    if (verMatch) {
+      const currentVer = parseInt(verMatch[1], 10);
+      const nextVer = currentVer + 1;
+      const formattedVer =
+        nextVer < 10 && verMatch[1].length >= 2 ? `0${nextVer}` : `${nextVer}`;
+      newTitle = original.post_title.replace(/\bver\s*\d+\b/i, `ver${formattedVer}`);
+    } else {
+      newTitle = `${original.post_title} ver02`;
+    }
+
+    // Copy metadata excluding sharing logs and edit locks
+    const metaToCopy = original.postmeta
+      .filter(
+        (m) =>
+          m.meta_key && m.meta_key !== "share_with" && !m.meta_key.startsWith("_edit_")
+      )
+      .map((m) => {
+        if (m.meta_key === "profile_status") {
+          return { meta_key: "profile_status", meta_value: "in_draft" };
+        }
+        return { meta_key: m.meta_key!, meta_value: m.meta_value };
+      });
+
+    if (!metaToCopy.some((m) => m.meta_key === "profile_status")) {
+      metaToCopy.push({ meta_key: "profile_status", meta_value: "in_draft" });
+    }
+
+    const duplicated = await prisma.wp_posts.create({
+      data: {
+        post_author: BigInt(authorId),
+        post_title: newTitle,
+        post_content: original.post_content,
+        post_excerpt: original.post_excerpt,
+        post_status: "in_draft",
+        post_type: "profile-builder",
+        post_date: new Date(),
+        post_date_gmt: new Date(),
+        post_modified: new Date(),
+        post_modified_gmt: new Date(),
+        to_ping: "",
+        pinged: "",
+        post_content_filtered: "",
+        postmeta: {
+          create: metaToCopy,
+        },
+      },
+      select: SAFE_POST_SELECT,
+    });
+
+    return duplicated;
+  }
+
   static async delete(id: number) {
     return prisma.wp_posts.delete({
       where: { ID: BigInt(id) },

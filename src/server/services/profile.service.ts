@@ -37,17 +37,20 @@ export class ProfileService {
 
   /**
    * Get single profile by ID with permission checks.
+   * If currentUser is omitted (public client link), allows viewing published/ready profiles.
    */
-  static async getProfileById(id: number, currentUser: CurrentUser) {
+  static async getProfileById(id: number, currentUser?: CurrentUser) {
     const profile = await ProfileRepository.findById(id);
     if (!profile) {
       throw new NotFoundError("Profile not found");
     }
 
-    const isRestricted =
-      currentUser.role === "engineer" || currentUser.role === "partner";
-    if (isRestricted && profile.post_author.toString() !== currentUser.id) {
-      throw new ForbiddenError("You are not authorized to view this profile");
+    if (currentUser) {
+      const isRestricted =
+        currentUser.role === "engineer" || currentUser.role === "partner";
+      if (isRestricted && profile.post_author.toString() !== currentUser.id) {
+        throw new ForbiddenError("You are not authorized to view this profile");
+      }
     }
 
     return serializeBigInt(profile);
@@ -135,5 +138,50 @@ export class ProfileService {
       input.feedback
     );
     return serializeBigInt(updated);
+  }
+
+  /**
+   * Duplicate profile with auto-incremented version number
+   */
+  static async duplicateProfile(id: number, currentUser: CurrentUser) {
+    const profile = await ProfileRepository.findById(id);
+    if (!profile) {
+      throw new NotFoundError("Profile not found");
+    }
+
+    const isRestricted =
+      currentUser.role === "engineer" || currentUser.role === "partner";
+    if (isRestricted && profile.post_author.toString() !== currentUser.id) {
+      throw new ForbiddenError("You are not authorized to duplicate this profile");
+    }
+
+    const duplicated = await ProfileRepository.duplicate(
+      id,
+      parseInt(currentUser.id, 10)
+    );
+    if (!duplicated) {
+      throw new NotFoundError("Failed to duplicate profile");
+    }
+
+    return serializeBigInt(duplicated);
+  }
+
+  /**
+   * Delete profile by ID with permission checks.
+   */
+  static async deleteProfile(id: number, currentUser: CurrentUser) {
+    const existing = await ProfileRepository.findById(id);
+    if (!existing) {
+      throw new NotFoundError("Profile not found");
+    }
+
+    const isRestricted =
+      currentUser.role === "engineer" || currentUser.role === "partner";
+    if (isRestricted && existing.post_author.toString() !== currentUser.id) {
+      throw new ForbiddenError("You are not authorized to delete this profile");
+    }
+
+    await ProfileRepository.delete(id);
+    return { success: true };
   }
 }

@@ -2,9 +2,11 @@
 
 import { useEffect, useState, use } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -21,18 +23,28 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   ArrowLeft,
   CheckCircle2,
-  Clock,
   AlertTriangle,
   Printer,
   Loader2,
   Send,
   Share2,
+  Copy,
   Briefcase,
   Award,
   FileText,
   Building,
+  Check,
+  History,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
@@ -56,13 +68,20 @@ interface ProfileDetail {
   }>;
 }
 
+interface ShareRecord {
+  company_name: string;
+  share_by: string;
+  date: string;
+}
+
 export default function ProfileDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { data: session } = useSession();
+  const router = useRouter();
+  const { data: session, status: sessionStatus } = useSession();
   const [profile, setProfile] = useState<ProfileDetail | null>(null);
   const [parsedData, setParsedData] = useState<{
     designation?: string;
@@ -73,17 +92,34 @@ export default function ProfileDetailPage({
   }>({});
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
   const [error, setError] = useState("");
+
+  // Review Feedback Dialog
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
   const [feedback, setFeedback] = useState("");
 
+  // Share Dialog State
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [shareRecords, setShareRecords] = useState<ShareRecord[]>([]);
+  const [companyName, setCompanyName] = useState("");
+  const [sharedBy, setSharedBy] = useState("");
+  const [sharedDate, setSharedDate] = useState(new Date().toISOString().split("T")[0]);
+  const [savingShare, setSavingShare] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const isAuthenticated = sessionStatus === "authenticated" && !!session?.user;
   const user = session?.user;
   const isAdminOrManager = user?.role === "administrator" || user?.role === "manager";
   const isEngineerOrPartner = user?.role === "engineer" || user?.role === "partner";
 
   useEffect(() => {
     fetchProfile();
-  }, [id]);
+    if (isAuthenticated) {
+      fetchShareRecords();
+      setSharedBy(user?.name || user?.email || "Team Member");
+    }
+  }, [id, isAuthenticated]);
 
   const fetchProfile = async () => {
     setIsLoading(true);
@@ -107,6 +143,18 @@ export default function ProfileDetailPage({
       setError("Network error while loading profile");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchShareRecords = async () => {
+    try {
+      const res = await fetch(`/api/profiles/${id}/share`);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        setShareRecords(data.data);
+      }
+    } catch {
+      // Ignored
     }
   };
 
@@ -140,10 +188,65 @@ export default function ProfileDetailPage({
     }
   };
 
+  const handleDuplicate = async () => {
+    setDuplicating(true);
+    try {
+      const res = await fetch(`/api/profiles/${id}/duplicate`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        toast.success(`Profile duplicated as "${data.data.post_title}"!`);
+        router.push(`/profiles/${data.data.ID}`);
+      } else {
+        toast.error(data.error?.message || "Failed to duplicate profile");
+      }
+    } catch {
+      toast.error("Network error while duplicating profile");
+    } finally {
+      setDuplicating(false);
+    }
+  };
+
   const handleCopyLink = () => {
     if (typeof window !== "undefined") {
-      navigator.clipboard.writeText(window.location.href);
-      toast.success("Profile link copied to clipboard!");
+      const publicUrl = `${window.location.origin}/profiles/${id}`;
+      navigator.clipboard.writeText(publicUrl);
+      setCopied(true);
+      toast.success("Public profile link copied to clipboard!");
+      setTimeout(() => setCopied(false), 2500);
+    }
+  };
+
+  const handleSaveShare = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!companyName.trim()) {
+      toast.error("Please enter the client / company name");
+      return;
+    }
+
+    setSavingShare(true);
+    try {
+      const res = await fetch(`/api/profiles/${id}/share`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          companyName: companyName.trim(),
+          date: sharedDate,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        setShareRecords(data.data);
+        setCompanyName("");
+        toast.success("Client share record logged successfully!");
+      } else {
+        toast.error(data.error?.message || "Failed to log share record");
+      }
+    } catch {
+      toast.error("Network error logging share record");
+    } finally {
+      setSavingShare(false);
     }
   };
 
@@ -172,12 +275,14 @@ export default function ProfileDetailPage({
   if (error || !profile) {
     return (
       <div className="space-y-4">
-        <Link href="/profiles">
-          <Button variant="ghost" size="sm" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Profiles
-          </Button>
-        </Link>
+        {isAuthenticated && (
+          <Link href="/profiles">
+            <Button variant="ghost" size="sm" className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Profiles
+            </Button>
+          </Link>
+        )}
         <div className="rounded-md bg-destructive/15 p-4 text-destructive">
           {error || "Profile not found"}
         </div>
@@ -188,24 +293,65 @@ export default function ProfileDetailPage({
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <PageTitle title={profile?.post_title || "Talent Dossier"} />
+
       {/* Top Action Bar (Hidden during print) */}
       <div className="no-print flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-        <Link href="/profiles">
-          <Button variant="ghost" size="sm" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Profiles
-          </Button>
-        </Link>
+        {isAuthenticated ? (
+          <Link href="/profiles">
+            <Button variant="ghost" size="sm" className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Profiles
+            </Button>
+          </Link>
+        ) : (
+          <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Zymr Verified Talent Dossier
+          </div>
+        )}
+
         <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCopyLink}
-            className="gap-1.5"
-          >
-            <Share2 className="h-3.5 w-3.5" />
-            Share
-          </Button>
+          {isAuthenticated ? (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShareDialogOpen(true)}
+                className="gap-1.5"
+              >
+                <Share2 className="h-3.5 w-3.5" />
+                Share with Client
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={duplicating}
+                onClick={handleDuplicate}
+                className="gap-1.5"
+              >
+                {duplicating ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
+                Duplicate
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopyLink}
+              className="gap-1.5"
+            >
+              {copied ? (
+                <Check className="h-3.5 w-3.5 text-emerald-600" />
+              ) : (
+                <Copy className="h-3.5 w-3.5" />
+              )}
+              {copied ? "Link Copied" : "Copy Dossier URL"}
+            </Button>
+          )}
+
           <Button
             variant="outline"
             size="sm"
@@ -217,7 +363,8 @@ export default function ProfileDetailPage({
           </Button>
 
           {/* Engineer Actions */}
-          {isEngineerOrPartner &&
+          {isAuthenticated &&
+            isEngineerOrPartner &&
             (profile.post_status === "in_draft" ||
               profile.post_status === "review_changes") && (
               <Button
@@ -232,7 +379,7 @@ export default function ProfileDetailPage({
             )}
 
           {/* Admin / Manager Review Actions */}
-          {isAdminOrManager && (
+          {isAuthenticated && isAdminOrManager && (
             <>
               {profile.post_status !== "is_ready" && (
                 <Button
@@ -293,7 +440,11 @@ export default function ProfileDetailPage({
                 {parsedData.designation || profile.post_excerpt || "Software Engineer"}
               </CardDescription>
             </div>
-            <div className="no-print shrink-0">{getStatusBadge(profile.post_status)}</div>
+            {isAuthenticated && (
+              <div className="no-print shrink-0">
+                {getStatusBadge(profile.post_status)}
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-xs text-muted-foreground">
@@ -307,7 +458,7 @@ export default function ProfileDetailPage({
             <span suppressHydrationWarning>
               Profile Date: {formatDate(profile.post_date)}
             </span>
-            {isAdminOrManager && parsedData.aliasName && (
+            {isAuthenticated && isAdminOrManager && parsedData.aliasName && (
               <>
                 <span>•</span>
                 <span className="font-semibold text-amber-600 dark:text-amber-400">
@@ -355,29 +506,177 @@ export default function ProfileDetailPage({
             </div>
           </div>
 
-          {/* Engagement Overview Card */}
+          {/* Organizational Details */}
           <div className="space-y-3 rounded-xl border border-border/80 bg-card p-5">
             <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-muted-foreground">
               <Building className="h-4 w-4 text-primary" />
-              Organizational Details
+              {isAuthenticated ? "Organizational Details" : "Engineering Practice"}
             </h3>
             <div className="grid grid-cols-1 gap-4 text-xs sm:grid-cols-2">
               <div>
-                <p className="text-muted-foreground">Author</p>
+                <p className="text-muted-foreground">Engineering Division</p>
                 <p className="mt-0.5 text-sm font-semibold text-foreground">
-                  {profile.author?.display_name || "Zymr Engineer"}
+                  {isAuthenticated
+                    ? profile.author?.display_name || "Zymr Engineer"
+                    : "Zymr Cloud & Platform Engineering"}
                 </p>
               </div>
               <div>
-                <p className="text-muted-foreground">Contact Email</p>
-                <p className="mt-0.5 text-sm font-semibold text-foreground">
-                  {profile.author?.user_email || "--"}
+                <p className="text-muted-foreground">Verification</p>
+                <p className="mt-0.5 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                  Zymr Certified Portfolio
                 </p>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Share Profile With Client Dialog (Legacy popup.php parity) */}
+      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg">
+              <Share2 className="h-5 w-5 text-primary" />
+              Share Profile With Client
+            </DialogTitle>
+            <DialogDescription>
+              Provide this public link to prospective clients and record sharing audit
+              logs.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-2">
+            {/* Direct Public Link Box */}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Public Client Link
+              </label>
+              <div className="flex items-center gap-2">
+                <Input
+                  readOnly
+                  value={
+                    typeof window !== "undefined"
+                      ? `${window.location.origin}/profiles/${id}`
+                      : ""
+                  }
+                  className="font-mono text-xs"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyLink}
+                  className="shrink-0 gap-1.5"
+                >
+                  {copied ? (
+                    <Check className="h-3.5 w-3.5 text-emerald-600" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
+                  {copied ? "Copied" : "Copy"}
+                </Button>
+              </div>
+            </div>
+
+            {/* Previous Shares History Table */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <History className="h-3.5 w-3.5" />
+                Previous Client Shares ({shareRecords.length})
+              </div>
+              <div className="max-h-40 overflow-y-auto rounded-lg border border-border">
+                {shareRecords.length === 0 ? (
+                  <p className="py-4 text-center text-xs text-muted-foreground">
+                    No client shares recorded yet.
+                  </p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-xs">Client Name</TableHead>
+                        <TableHead className="text-xs">Shared By</TableHead>
+                        <TableHead className="text-xs">Shared Date</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {shareRecords.map((record, index) => (
+                        <TableRow key={index} className="text-xs">
+                          <TableCell className="font-medium text-foreground">
+                            {record.company_name}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {record.share_by}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {record.date}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </div>
+            </div>
+
+            {/* Add New Share Record Form */}
+            <form
+              onSubmit={handleSaveShare}
+              className="space-y-3 rounded-lg border border-border/80 bg-muted/20 p-4"
+            >
+              <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                Log New Client Share
+              </h4>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="space-y-1">
+                  <label className="text-xs text-muted-foreground">Client Name *</label>
+                  <Input
+                    required
+                    placeholder="e.g. Acme Corp"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-muted-foreground">Shared By</label>
+                  <Input readOnly value={sharedBy} className="h-8 bg-muted/40 text-xs" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-muted-foreground">Shared Date</label>
+                  <Input
+                    type="date"
+                    value={sharedDate}
+                    onChange={(e) => setSharedDate(e.target.value)}
+                    className="h-8 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={savingShare || !companyName.trim()}
+                  className="gap-1.5 text-xs shadow-xs"
+                >
+                  {savingShare ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Share2 className="h-3.5 w-3.5" />
+                  )}
+                  Save & Log Share
+                </Button>
+              </div>
+            </form>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setShareDialogOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Review Feedback Dialog */}
       <Dialog open={feedbackDialogOpen} onOpenChange={setFeedbackDialogOpen}>

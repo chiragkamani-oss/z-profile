@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Search, Eye, Sparkles, Filter, Loader2 } from "lucide-react";
+import { Plus, Search, Eye, Sparkles, Filter, Loader2, Copy } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
 import { PageTitle } from "@/components/layout/page-title";
@@ -35,6 +35,7 @@ export default function ProfilesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProfiles();
@@ -65,6 +66,26 @@ export default function ProfilesPage() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     fetchProfiles(search);
+  };
+
+  const handleDuplicate = async (id: string) => {
+    setDuplicatingId(id);
+    try {
+      const res = await fetch(`/api/profiles/${id}/duplicate`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        toast.success(`Profile duplicated as "${data.data.post_title}"!`);
+        fetchProfiles(search);
+      } else {
+        toast.error(data.error?.message || "Failed to duplicate profile");
+      }
+    } catch {
+      toast.error("Network error while duplicating profile");
+    } finally {
+      setDuplicatingId(null);
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -203,16 +224,33 @@ export default function ProfilesPage() {
                     {formatDate(profile.post_date)}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Link href={`/profiles/${profile.ID}`}>
+                    <div className="flex items-center justify-end gap-1">
+                      <Link href={`/profiles/${profile.ID}`}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 gap-1 text-xs hover:text-primary"
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                          View
+                        </Button>
+                      </Link>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 gap-1 text-xs hover:text-primary"
+                        disabled={duplicatingId === profile.ID}
+                        onClick={() => handleDuplicate(profile.ID)}
+                        className="h-8 gap-1 text-xs text-muted-foreground hover:text-primary"
+                        title="Duplicate Profile"
                       >
-                        <Eye className="h-3.5 w-3.5" />
-                        View
+                        {duplicatingId === profile.ID ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5" />
+                        )}
+                        Clone
                       </Button>
-                    </Link>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

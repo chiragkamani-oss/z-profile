@@ -35,7 +35,8 @@ export class ProfileController {
 
   static async getProfileById(req: NextRequest, { params }: { params: { id: string } }) {
     try {
-      const user = await this.getSessionUser();
+      const session = await getServerSession(authOptions);
+      const user = session?.user as CurrentUser | undefined;
       const id = parseInt(params.id, 10);
       const profile = await ProfileService.getProfileById(id, user);
       return successResponse(profile);

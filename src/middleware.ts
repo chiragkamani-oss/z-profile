@@ -15,7 +15,27 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ token }) => !!token,
+      authorized: ({ req, token }) => {
+        const path = req.nextUrl.pathname;
+
+        // Allow public read-only viewing of individual talent dossiers and their GET APIs
+        if (req.method === "GET") {
+          // Public profile view /profiles/[numeric-id]
+          if (/^\/profiles\/\d+$/.test(path)) {
+            return true;
+          }
+          // Public profile read API /api/profiles/[numeric-id]
+          if (/^\/api\/profiles\/\d+$/.test(path)) {
+            return true;
+          }
+          // Public external integration REST APIs
+          if (/^\/api\/zprofile(\/.*)?$/.test(path)) {
+            return true;
+          }
+        }
+
+        return !!token;
+      },
     },
     pages: {
       signIn: "/login",
