@@ -18,3 +18,8 @@
    - Always display `data.error?.message` in toast notifications.
    - Embed inline alert banners with `<AlertCircle />` in form dialogs so users see exact field requirements without losing form state.
 7. Prevent hydration mismatches by utilizing consistent date formatting (`formatDate`).
+8. Adopt Reusable Component Standards (`@/components/common`):
+   - Use `<FormField>` to guarantee structural label-to-input association (Sonar S6853) and accessible error states.
+   - Use `<ConfirmDialog>` for confirmation flows with screen-reader accessible headers (Sonar S6850).
+   - Use `<StatusBadge>` for unified status display across views.
+   - Ensure native button semantics (`<button type="button">`, Sonar S6848) and explicit `void` unhandled promise markers (Sonar S9383).

@@ -117,7 +117,68 @@ Always use the standardized primitives in `src/components/ui/` rather than raw u
 
 ---
 
-### 5. Print & PDF Dossier Layout Standard
+### 5. Reusable Component Standards for Maintainability & SonarQube Compliance
+To prevent code duplication (CPD $\le 0.0\%$), accessibility failures, and SonarQube bugs across the application, always adopt the standardized building blocks in `@/components/common`:
+
+#### A. Accessible Form Controls (`<FormField>`)
+- **Sonar Rule (`typescript:S6853`)**: A form label must always be associated with a control.
+- Never write bare `<label>` or unlinked inputs. Use `<FormField>`:
+  ```tsx
+  import { FormField } from "@/components/common";
+
+  <FormField
+    label="Client Name"
+    id="client-name"
+    required
+    value={name}
+    onChange={(e) => setName(e.target.value)}
+    error={errors.name}
+    helperText="Official registered account name"
+  />
+  ```
+  *Features*: Structurally generates matching `htmlFor`/`id`, `aria-invalid`, `aria-describedby`, error messages, and required indicator.
+
+#### B. Confirmation Dialogs (`<ConfirmDialog>`)
+- **Sonar Rules (`typescript:S6850`, `typescript:S9383`)**: Modals must have accessible headers and descriptions, and async confirm actions must not leave floating promises.
+- Use `<ConfirmDialog>` instead of re-implementing delete/action dialogs:
+  ```tsx
+  import { ConfirmDialog } from "@/components/common";
+
+  <ConfirmDialog
+    open={deleteOpen}
+    onOpenChange={setDeleteOpen}
+    title="Delete Corporate Project"
+    description={`Are you sure you want to delete "${projectName}"? This action cannot be undone.`}
+    variant="destructive"
+    confirmText="Delete Project"
+    isLoading={isDeleting}
+    onConfirm={handleDeleteProject}
+  />
+  ```
+
+#### C. Centralized Status Badging (`<StatusBadge>`)
+- Eliminate duplicate `switch (status)` statements for profile badges:
+  ```tsx
+  import { StatusBadge } from "@/components/common";
+
+  <StatusBadge status={profile.post_status} />
+  ```
+
+#### D. Interactive Button Semantics (`typescript:S6848`)
+- Never attach `onClick` handlers to non-interactive elements like `<div>` or `<span>`.
+- Always use native `<button type="button">` or `<Button>` with proper keyboard navigation (`tabIndex={0}`, `onKeyDown`).
+
+#### E. Fire-and-Forget Async Calls (`typescript:S9383`)
+- React `useEffect` or button callbacks invoking asynchronous functions must explicitly mark ignored promises with `void`:
+  ```tsx
+  useEffect(() => {
+    void fetchData();
+  }, []);
+  ```
+
+---
+
+### 6. Print & PDF Dossier Layout Standard
 For client-facing talent profiles and resumes, ensure clean print rendering:
 - Always apply `.no-print` to interactive controls (`aside`, `header`, action buttons, toasts).
 - Use `src/app/globals.css` `@media print` utilities:
