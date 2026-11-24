@@ -80,4 +80,142 @@ export class ClientService {
 
     return serializeBigInt(client);
   }
+
+  /**
+   * Get single client by ID with role check.
+   */
+  static async getClientById(id: number, currentUser: CurrentUser) {
+    const isEngineer = currentUser.role === "engineer";
+    const client = await prisma.wp_posts.findFirst({
+      where: {
+        ID: BigInt(id),
+        post_type: "client",
+        ...(isEngineer ? { post_author: BigInt(currentUser.id) } : {}),
+      },
+      select: SAFE_CLIENT_SELECT,
+    });
+
+    if (!client) {
+      throw new NotFoundError("Client account not found");
+    }
+
+    return serializeBigInt(client);
+  }
+
+  /**
+   * Update client details.
+   */
+  static async updateClient(
+    id: number,
+    data: UpdateClientInput,
+    currentUser: CurrentUser
+  ) {
+    const isEngineer = currentUser.role === "engineer";
+    const existing = await prisma.wp_posts.findFirst({
+      where: {
+        ID: BigInt(id),
+        post_type: "client",
+      },
+      select: { ID: true, post_author: true },
+    });
+
+    if (!existing) {
+      throw new NotFoundError("Client account not found");
+    }
+
+    if (isEngineer && existing.post_author.toString() !== currentUser.id) {
+      throw new ForbiddenError("You are not authorized to edit this client");
+    }
+
+    await prisma.wp_posts.update({
+      where: { ID: BigInt(id) },
+      data: {
+        ...(data.name ? { post_title: data.name } : {}),
+        ...(data.description !== undefined ? { post_content: data.description } : {}),
+        post_modified: new Date(),
+        post_modified_gmt: new Date(),
+      },
+      select: { ID: true },
+    });
+
+    if (data.industry !== undefined) {
+      const meta = await prisma.wp_postmeta.findFirst({
+        where: { post_id: BigInt(id), meta_key: "industry" },
+      });
+      if (meta) {
+        await prisma.wp_postmeta.update({
+          where: { meta_id: meta.meta_id },
+          data: { meta_value: data.industry },
+        });
+      } else {
+        await prisma.wp_postmeta.create({
+          data: {
+            post_id: BigInt(id),
+            meta_key: "industry",
+            meta_value: data.industry,
+          },
+        });
+      }
+    }
+
+    if (data.website !== undefined) {
+      const meta = await prisma.wp_postmeta.findFirst({
+        where: { post_id: BigInt(id), meta_key: "website" },
+      });
+      if (meta) {
+        await prisma.wp_postmeta.update({
+          where: { meta_id: meta.meta_id },
+          data: { meta_value: data.website },
+        });
+      } else {
+        await prisma.wp_postmeta.create({
+          data: {
+            post_id: BigInt(id),
+            meta_key: "website",
+            meta_value: data.website,
+          },
+        });
+      }
+    }
+
+    const refreshed = await prisma.wp_posts.findFirst({
+      where: { ID: BigInt(id) },
+      select: SAFE_CLIENT_SELECT,
+    });
+
+    return serializeBigInt(refreshed);
+  }
+
+  /**
+   * Delete client account.
+   */
+  static async deleteClient(id: number, currentUser: CurrentUser) {
+    const isEngineer = currentUser.role === "engineer";
+    const existing = await prisma.wp_posts.findFirst({
+      where: {
+        ID: BigInt(id),
+        post_type: "client",
+      },
+      select: { ID: true, post_author: true },
+    });
+
+    if (!existing) {
+      throw new NotFoundError("Client account not found");
+    }
+
+    if (isEngineer && existing.post_author.toString() !== currentUser.id) {
+      throw new ForbiddenError("You are not authorized to delete this client");
+    }
+
+    await prisma.wp_postmeta.deleteMany({
+      where: { post_id: BigInt(id) },
+    });
+
+    await prisma.wp_posts.delete({
+      where: { ID: BigInt(id) },
+      select: { ID: true },
+    });
+
+    return { success: true };
+  }
 }
