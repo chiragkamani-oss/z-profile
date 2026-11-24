@@ -19,6 +19,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ShieldCheck, Users, Lock, CheckCircle2, XCircle } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { PageTitle } from "@/components/layout/page-title";
 
 interface UserItem {
   id: string;
@@ -71,6 +72,7 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
+      <PageTitle title="Admin & RBAC" />
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Admin & Role Management</h1>
         <p className="text-muted-foreground">

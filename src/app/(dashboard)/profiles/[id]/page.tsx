@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
+import { PageTitle } from "@/components/layout/page-title";
 
 interface ProfileDetail {
   ID: string;
@@ -186,6 +187,7 @@ export default function ProfileDetailPage({
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
+      <PageTitle title={profile?.post_title || "Talent Dossier"} />
       {/* Top Action Bar (Hidden during print) */}
       <div className="no-print flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <Link href="/profiles">

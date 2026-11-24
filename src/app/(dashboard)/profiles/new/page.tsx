@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { PageTitle } from "@/components/layout/page-title";
 
 interface ProjectItem {
   id: string;
@@ -255,6 +256,7 @@ export default function NewProfilePage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 pb-12">
+      <PageTitle title="Create Talent Profile" />
       {/* Top Header / Back Button */}
       <div className="flex items-center justify-between">
         <Link href="/profiles">

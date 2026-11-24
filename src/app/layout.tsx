@@ -8,8 +8,16 @@ import { Toaster } from "@/components/ui/sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Zprofile - Talent Profile Management",
-  description: "Zymr enterprise employee profile builder and talent management",
+  title: {
+    default: "Zprofile | Zymr Talent Platform",
+    template: "%s | Zprofile",
+  },
+  description: "Zymr enterprise employee profile builder and talent management platform",
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }, { url: "/favicon.ico" }],
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({

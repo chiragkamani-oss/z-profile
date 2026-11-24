@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="zymr-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0066f5" />
+      <stop offset="100%" stop-color="#0047b3" />
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="7" fill="url(#zymr-grad)" />
+  <path d="M9 9h14l-8.5 10H23v4H9l8.5-10H9V9z" fill="#ffffff" />
+</svg>

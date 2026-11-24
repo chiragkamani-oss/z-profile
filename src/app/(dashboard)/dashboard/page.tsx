@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { PageTitle } from "@/components/layout/page-title";
 import { formatDate } from "@/lib/utils";
 import {
   Users,
@@ -99,6 +100,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      <PageTitle title="Executive Dashboard" />
       {/* Welcome Banner */}
       <div className="relative overflow-hidden rounded-2xl border border-blue-600/10 bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white shadow-md dark:border-blue-500/20 dark:bg-gradient-to-r dark:from-card dark:via-blue-950/30 dark:to-card dark:text-foreground dark:shadow-none">
         {/* Subtle decorative glow in dark mode */}

@@ -16,6 +16,7 @@ import {
 import { Plus, Search, Eye, Sparkles, Filter, Loader2 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
+import { PageTitle } from "@/components/layout/page-title";
 
 interface ProfileItem {
   ID: string;
@@ -82,6 +83,7 @@ export default function ProfilesPage() {
 
   return (
     <div className="space-y-6">
+      <PageTitle title="Talent Directory" />
       {/* Header */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>

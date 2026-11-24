@@ -28,6 +28,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Building2, Plus, Globe, Loader2 } from "lucide-react";
+import { PageTitle } from "@/components/layout/page-title";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -112,6 +113,7 @@ export default function ClientsPage() {
 
   return (
     <div className="space-y-6">
+      <PageTitle title="Enterprise Clients" />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Clients Directory</h1>
