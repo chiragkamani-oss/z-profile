@@ -43,7 +43,7 @@ export function formatDate(dateInput: string | Date | null | undefined): string 
   if (!dateInput) return "--";
   try {
     const d = new Date(dateInput);
-    if (isNaN(d.getTime())) return "--";
+    if (Number.isNaN(d.getTime())) return "--";
     return d.toISOString().split("T")[0]; // YYYY-MM-DD
   } catch {
     return "--";

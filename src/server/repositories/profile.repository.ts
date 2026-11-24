@@ -231,7 +231,7 @@ export class ProfileRepository {
     let newTitle = original.post_title;
     const verMatch = original.post_title.match(/\bver\s*(\d+)\b/i);
     if (verMatch) {
-      const currentVer = parseInt(verMatch[1], 10);
+      const currentVer = Number.parseInt(verMatch[1], 10);
       const nextVer = currentVer + 1;
       const formattedVer =
         nextVer < 10 && verMatch[1].length >= 2 ? `0${nextVer}` : `${nextVer}`;

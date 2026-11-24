@@ -33,7 +33,7 @@ export class ClientController {
     try {
       const user = await this.getSessionUser();
       const { id } = await params;
-      const client = await ClientService.getClientById(parseInt(id, 10), user);
+      const client = await ClientService.getClientById(Number.parseInt(id, 10), user);
       return successResponse(client);
     } catch (error) {
       return errorResponse(error);
@@ -64,7 +64,7 @@ export class ClientController {
       const validatedData = updateClientSchema.parse(body);
 
       const client = await ClientService.updateClient(
-        parseInt(id, 10),
+        Number.parseInt(id, 10),
         validatedData,
         user
       );
@@ -81,7 +81,7 @@ export class ClientController {
     try {
       const user = await this.getSessionUser();
       const { id } = await params;
-      const result = await ClientService.deleteClient(parseInt(id, 10), user);
+      const result = await ClientService.deleteClient(Number.parseInt(id, 10), user);
       return successResponse(result);
     } catch (error) {
       return errorResponse(error);

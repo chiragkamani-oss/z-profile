@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { successResponse, errorResponse } from "@/server/utils/api-response";
 import { BadRequestError, NotFoundError } from "@/server/utils/errors";
@@ -16,8 +17,8 @@ export async function GET(
     const { email } = await params;
     const trimmedEmail = decodeURIComponent(email).trim();
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(trimmedEmail)) {
+    const emailSchema = z.string().email();
+    if (!emailSchema.safeParse(trimmedEmail).success) {
       throw new BadRequestError("Please check your email address format");
     }
 

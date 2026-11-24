@@ -597,11 +597,15 @@ export default function ProfileDetailPage({
           <div className="space-y-6 py-2">
             {/* Direct Public Link Box */}
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <label
+                htmlFor="public-client-link"
+                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+              >
                 Public Client Link
               </label>
               <div className="flex items-center gap-2">
                 <Input
+                  id="public-client-link"
                   readOnly
                   value={
                     typeof window !== "undefined"
@@ -676,8 +680,14 @@ export default function ProfileDetailPage({
               </h4>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">Client Name *</label>
+                  <label
+                    htmlFor="share-client-name"
+                    className="text-xs text-muted-foreground"
+                  >
+                    Client Name *
+                  </label>
                   <Input
+                    id="share-client-name"
                     required
                     placeholder="e.g. Acme Corp"
                     value={companyName}
@@ -686,12 +696,28 @@ export default function ProfileDetailPage({
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">Shared By</label>
-                  <Input readOnly value={sharedBy} className="h-8 bg-muted/40 text-xs" />
+                  <label
+                    htmlFor="share-by-input"
+                    className="text-xs text-muted-foreground"
+                  >
+                    Shared By
+                  </label>
+                  <Input
+                    id="share-by-input"
+                    readOnly
+                    value={sharedBy}
+                    className="h-8 bg-muted/40 text-xs"
+                  />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">Shared Date</label>
+                  <label
+                    htmlFor="share-date-input"
+                    className="text-xs text-muted-foreground"
+                  >
+                    Shared Date
+                  </label>
                   <Input
+                    id="share-date-input"
                     type="date"
                     value={sharedDate}
                     onChange={(e) => setSharedDate(e.target.value)}

@@ -31,17 +31,11 @@ function verifyPhpass(password: string, hash: string): boolean {
   const salt = hash.substring(4, 12);
   if (salt.length !== 8) return false;
 
-  // NOSONAR: Required for backwards-compatible verification of legacy WordPress phpass passwords
-  let hashVal = crypto
-    .createHash("md5")
-    .update(salt + password, "binary")
-    .digest(); // NOSONAR
+  // prettier-ignore
+  let hashVal = crypto.createHash("md5").update(salt + password, "binary").digest(); // NOSONAR
   do {
-    // NOSONAR: Required for backwards-compatible verification of legacy WordPress phpass passwords
-    hashVal = crypto
-      .createHash("md5")
-      .update(Buffer.concat([hashVal, Buffer.from(password, "binary")]))
-      .digest(); // NOSONAR
+    // prettier-ignore
+    hashVal = crypto.createHash("md5").update(Buffer.concat([hashVal, Buffer.from(password, "binary")])).digest(); // NOSONAR
   } while (--count > 0);
 
   let output = hash.substring(0, 12);

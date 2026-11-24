@@ -21,7 +21,7 @@ export class ProjectController {
       const user = await this.getSessionUser();
       const { searchParams } = new URL(req.url);
       const clientId = searchParams.get("clientId")
-        ? parseInt(searchParams.get("clientId")!, 10)
+        ? Number.parseInt(searchParams.get("clientId")!, 10)
         : undefined;
 
       const projects = await ProjectService.listProjects(user, clientId);
@@ -38,7 +38,7 @@ export class ProjectController {
     try {
       await this.getSessionUser();
       const { id } = await params;
-      const project = await ProjectService.getProjectById(parseInt(id, 10));
+      const project = await ProjectService.getProjectById(Number.parseInt(id, 10));
       return successResponse(project);
     } catch (error) {
       return errorResponse(error);
@@ -69,7 +69,7 @@ export class ProjectController {
       const validatedData = updateProjectSchema.parse(body);
 
       const project = await ProjectService.updateProject(
-        parseInt(id, 10),
+        Number.parseInt(id, 10),
         validatedData,
         user
       );
@@ -86,7 +86,7 @@ export class ProjectController {
     try {
       const user = await this.getSessionUser();
       const { id } = await params;
-      const result = await ProjectService.deleteProject(parseInt(id, 10), user);
+      const result = await ProjectService.deleteProject(Number.parseInt(id, 10), user);
       return successResponse(result);
     } catch (error) {
       return errorResponse(error);

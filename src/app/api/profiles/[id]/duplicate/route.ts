@@ -17,7 +17,7 @@ export async function POST(
 
     const { id } = await params;
     const profile = await ProfileService.duplicateProfile(
-      parseInt(id, 10),
+      Number.parseInt(id, 10),
       session.user as CurrentUser
     );
 

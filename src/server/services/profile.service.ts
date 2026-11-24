@@ -188,7 +188,7 @@ export class ProfileService {
 
     const duplicated = await ProfileRepository.duplicate(
       id,
-      parseInt(currentUser.id, 10)
+      Number.parseInt(currentUser.id, 10)
     );
     if (!duplicated) {
       throw new NotFoundError("Failed to duplicate profile");

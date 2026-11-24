@@ -11,7 +11,7 @@ export class ProjectService {
 
     const projects = await ProjectRepository.findMany({
       clientId,
-      ...(isRestricted ? { authorId: parseInt(currentUser.id, 10) } : {}),
+      ...(isRestricted ? { authorId: Number.parseInt(currentUser.id, 10) } : {}),
     });
 
     return serializeBigInt(projects);
@@ -26,7 +26,10 @@ export class ProjectService {
   }
 
   static async createProject(data: CreateProjectInput, currentUser: CurrentUser) {
-    const project = await ProjectRepository.create(parseInt(currentUser.id, 10), data);
+    const project = await ProjectRepository.create(
+      Number.parseInt(currentUser.id, 10),
+      data
+    );
     return serializeBigInt(project);
   }
 
