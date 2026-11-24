@@ -79,7 +79,7 @@ export default function ClientsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchClients();
+    void fetchClients();
   }, []);
 
   const fetchClients = async () => {
@@ -120,7 +120,7 @@ export default function ClientsPage() {
         setIndustry("");
         setWebsite("");
         setDescription("");
-        fetchClients();
+        void fetchClients();
       } else {
         toast.error(data.error?.message || "Failed to create client");
       }
@@ -164,7 +164,7 @@ export default function ClientsPage() {
         toast.success(`Client "${editName}" updated successfully!`);
         setEditDialogOpen(false);
         setEditingId(null);
-        fetchClients();
+        void fetchClients();
       } else {
         toast.error(data.error?.message || "Failed to update client");
       }
@@ -188,7 +188,7 @@ export default function ClientsPage() {
       const data = await res.json();
       if (data.success) {
         toast.success(`Client "${clientName}" deleted successfully`);
-        fetchClients();
+        void fetchClients();
       } else {
         toast.error(data.error?.message || "Failed to delete client");
       }

@@ -105,8 +105,8 @@ export default function SettingsPage() {
   const [isDeletingUser, setIsDeletingUser] = useState(false);
 
   useEffect(() => {
-    fetchUsers();
-    fetchConfig();
+    void fetchUsers();
+    void fetchConfig();
   }, []);
 
   const fetchUsers = async () => {
@@ -154,7 +154,7 @@ export default function SettingsPage() {
         setNewUserPassword("");
         setNewUserRole("engineer");
         setNewUserCanShare(false);
-        fetchUsers();
+        void fetchUsers();
       } else {
         const errorMsg = data.error?.message || "Failed to create user";
         setAddUserError(errorMsg);
@@ -206,7 +206,7 @@ export default function SettingsPage() {
         toast.success("User account updated successfully!");
         setEditUserError("");
         setEditUserOpen(false);
-        fetchUsers();
+        void fetchUsers();
       } else {
         const errorMsg = data.error?.message || "Failed to update user";
         setEditUserError(errorMsg);
@@ -238,7 +238,7 @@ export default function SettingsPage() {
         toast.success(`User "${userToDelete.displayName}" deleted successfully.`);
         setDeleteConfirmOpen(false);
         setUserToDelete(null);
-        fetchUsers();
+        void fetchUsers();
       } else {
         toast.error(data.error?.message || "Failed to delete user");
       }
@@ -322,7 +322,7 @@ export default function SettingsPage() {
     }
 
     clearFn("");
-    handleSaveConfig(updated);
+    void handleSaveConfig(updated);
   };
 
   const removeTag = (
@@ -357,7 +357,7 @@ export default function SettingsPage() {
       updated.education.courses = updated.education.courses.filter((i) => i !== item);
     }
 
-    handleSaveConfig(updated);
+    void handleSaveConfig(updated);
   };
 
   const getRoleBadge = (role: string) => {

@@ -31,8 +31,8 @@ export class UserController {
   static async getUserById(_req: NextRequest, { params }: { params: { id: string } }) {
     try {
       await this.getAdminSession();
-      const id = parseInt(params.id, 10);
-      if (isNaN(id)) {
+      const id = Number.parseInt(params.id, 10);
+      if (Number.isNaN(id)) {
         throw new BadRequestError("Invalid user ID");
       }
       const user = await UserRepository.findById(id);
@@ -58,8 +58,8 @@ export class UserController {
   static async updateUser(req: NextRequest, { params }: { params: { id: string } }) {
     try {
       await this.getAdminSession();
-      const id = parseInt(params.id, 10);
-      if (isNaN(id)) {
+      const id = Number.parseInt(params.id, 10);
+      if (Number.isNaN(id)) {
         throw new BadRequestError("Invalid user ID");
       }
       const body = await req.json();
@@ -75,12 +75,12 @@ export class UserController {
   static async deleteUser(_req: NextRequest, { params }: { params: { id: string } }) {
     try {
       const sessionUser = await this.getAdminSession();
-      const id = parseInt(params.id, 10);
-      if (isNaN(id)) {
+      const id = Number.parseInt(params.id, 10);
+      if (Number.isNaN(id)) {
         throw new BadRequestError("Invalid user ID");
       }
 
-      const currentUserId = parseInt(sessionUser.id, 10);
+      const currentUserId = Number.parseInt(sessionUser.id, 10);
       const result = await UserRepository.delete(id, currentUserId);
       return successResponse(result);
     } catch (error) {

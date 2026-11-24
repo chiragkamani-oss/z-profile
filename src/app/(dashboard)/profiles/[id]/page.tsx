@@ -138,9 +138,9 @@ export default function ProfileDetailPage({
   const isEngineerOrPartner = user?.role === "engineer" || user?.role === "partner";
 
   useEffect(() => {
-    fetchProfile();
+    void fetchProfile();
     if (isAuthenticated) {
-      fetchShareRecords();
+      void fetchShareRecords();
       setSharedBy(user?.name || user?.email || "Team Member");
     }
   }, [id, isAuthenticated]);
@@ -201,7 +201,7 @@ export default function ProfileDetailPage({
         } else if (status === "review_changes") {
           toast.warning("Change request sent with feedback to the engineer.");
         }
-        fetchProfile();
+        void fetchProfile();
       } else {
         toast.error(data.error?.message || "Failed to update status");
       }
@@ -235,7 +235,7 @@ export default function ProfileDetailPage({
   const handleCopyLink = () => {
     if (typeof window !== "undefined") {
       const publicUrl = `${window.location.origin}/profiles/${id}`;
-      navigator.clipboard.writeText(publicUrl);
+      void navigator.clipboard.writeText(publicUrl);
       setCopied(true);
       toast.success("Public profile link copied to clipboard!");
       setTimeout(() => setCopied(false), 2500);

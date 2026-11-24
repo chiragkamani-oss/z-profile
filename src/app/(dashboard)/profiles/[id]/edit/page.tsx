@@ -172,7 +172,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
       }
     };
 
-    fetchProfile();
+    void fetchProfile();
   }, [id]);
 
   const addSkill = (skillToAdd?: string) => {
@@ -386,9 +386,10 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
             const isCurrent = currentStep === step.id;
 
             return (
-              <div
+              <button
+                type="button"
                 key={step.id}
-                className="z-10 flex cursor-pointer flex-col items-center"
+                className="font-inherit z-10 flex cursor-pointer flex-col items-center border-0 bg-transparent p-0 text-inherit"
                 onClick={() => {
                   if (step.id < currentStep || validateCurrentStep()) {
                     setCurrentStep(step.id);
@@ -422,7 +423,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                     {step.desc}
                   </div>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

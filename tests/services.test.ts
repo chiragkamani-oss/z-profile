@@ -137,7 +137,7 @@ describe("ProjectService", () => {
     ]);
     const projects = await ProjectService.listProjects(adminUser);
     expect(projects.length).toBe(1);
-    expect(projects[0].ID).toBe("101");
+    expect(projects[0].ID as unknown).toBe("101");
   });
 
   it("filters projects by author for restricted engineer role", async () => {
@@ -150,7 +150,7 @@ describe("ProjectService", () => {
       },
     ]);
     const projects = await ProjectService.listProjects(engineerUser);
-    expect(projects[0].ID).toBe("102");
+    expect(projects[0].ID as unknown).toBe("102");
     expect(prisma.wp_posts.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ post_author: BigInt(2) }),
@@ -194,7 +194,7 @@ describe("ProjectService", () => {
       },
       engineerUser
     );
-    expect(created.ID).toBe("105");
+    expect(String(created.ID)).toBe("105");
   });
 
   it("updates project with author check for restricted users", async () => {
@@ -300,7 +300,7 @@ describe("ClientService", () => {
       },
       adminUser
     );
-    expect(created.ID).toBe("2");
+    expect(created.ID as unknown).toBe("2");
   });
 
   it("updates and deletes client with permission verification", async () => {
@@ -421,7 +421,7 @@ describe("ProfileService & Workflow Transitions", () => {
       },
       engineerUser
     );
-    expect(created.ID).toBe("6");
+    expect(created.ID as unknown).toBe("6");
   });
 
   it("triggers correct transactional emails on status change", async () => {
@@ -504,7 +504,7 @@ describe("ProfileService & Workflow Transitions", () => {
     });
 
     const dup = await ProfileService.duplicateProfile(6, engineerUser);
-    expect(dup.ID).toBe("7");
+    expect(dup.ID as unknown).toBe("7");
   });
 
   it("deletes profile with authorization verification and error handling", async () => {

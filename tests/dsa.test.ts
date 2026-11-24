@@ -119,9 +119,9 @@ describe("Data Structures & Algorithms (DSA) Suite", () => {
 
       const serialized = serializeBigInt(input);
 
-      expect(serialized.id).toBe("9007199254740991");
+      expect(serialized.id as unknown).toBe("9007199254740991");
       expect(serialized.date).toBe(now.toISOString());
-      expect(serialized.meta[0].value).toBe("12");
+      expect(serialized.meta[0].value as unknown).toBe("12");
       expect(serialized.meta[1].value).toBe(true);
       expect(serialized.empty).toBeNull();
       expect(serialized.missing).toBeUndefined();
@@ -132,7 +132,7 @@ describe("Data Structures & Algorithms (DSA) Suite", () => {
       expect(serializeBigInt(123)).toBe(123);
       expect(serializeBigInt(null)).toBeNull();
       expect(serializeBigInt(undefined)).toBeUndefined();
-      expect(serializeBigInt(BigInt(42))).toBe("42");
+      expect(serializeBigInt(BigInt(42)) as unknown).toBe("42");
     });
   });
 });

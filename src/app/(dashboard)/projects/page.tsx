@@ -104,8 +104,8 @@ export default function ProjectsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchProjects();
-    fetchClients();
+    void fetchProjects();
+    void fetchClients();
   }, []);
 
   const fetchProjects = async () => {
@@ -199,7 +199,7 @@ export default function ProjectsPage() {
         setArchitecture("");
         setResponsibilities("");
         setContributions("");
-        fetchProjects();
+        void fetchProjects();
       } else {
         toast.error(data.error?.message || "Failed to create project");
       }
@@ -268,7 +268,7 @@ export default function ProjectsPage() {
         toast.success(`Project "${editName}" updated successfully!`);
         setEditDialogOpen(false);
         setEditingId(null);
-        fetchProjects();
+        void fetchProjects();
       } else {
         toast.error(data.error?.message || "Failed to update project");
       }
@@ -292,7 +292,7 @@ export default function ProjectsPage() {
       const data = await res.json();
       if (data.success) {
         toast.success(`Project "${projectName}" deleted successfully`);
-        fetchProjects();
+        void fetchProjects();
       } else {
         toast.error(data.error?.message || "Failed to delete project");
       }

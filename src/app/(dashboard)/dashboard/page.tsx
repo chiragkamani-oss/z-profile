@@ -53,7 +53,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchStats();
+    void fetchStats();
   }, []);
 
   const fetchStats = async () => {

@@ -25,7 +25,7 @@ export class ProfileService {
   static async listProfiles(currentUser: CurrentUser, search?: string, status?: string) {
     const isRestricted =
       currentUser.role === "engineer" || currentUser.role === "partner";
-    const authorId = isRestricted ? parseInt(currentUser.id, 10) : undefined;
+    const authorId = isRestricted ? Number.parseInt(currentUser.id, 10) : undefined;
 
     const profiles = await ProfileRepository.findMany({
       authorId,
@@ -61,7 +61,7 @@ export class ProfileService {
    * Create a new profile assigned to the current user.
    */
   static async createProfile(data: CreateProfileInput, currentUser: CurrentUser) {
-    const authorId = parseInt(currentUser.id, 10);
+    const authorId = Number.parseInt(currentUser.id, 10);
     const profile = await ProfileRepository.create(authorId, data);
     return serializeBigInt(profile);
   }

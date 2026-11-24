@@ -61,7 +61,7 @@ export default function ProfilesPage() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    fetchProfiles();
+    void fetchProfiles();
   }, [statusFilter]);
 
   const fetchProfiles = async (searchTerm = "") => {
@@ -88,7 +88,7 @@ export default function ProfilesPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchProfiles(search);
+    void fetchProfiles(search);
   };
 
   const handleDuplicate = async (id: string) => {
@@ -100,7 +100,7 @@ export default function ProfilesPage() {
       const data = await res.json();
       if (data.success && data.data) {
         toast.success(`Profile duplicated as "${data.data.post_title}"!`);
-        fetchProfiles(search);
+        void fetchProfiles(search);
       } else {
         toast.error(data.error?.message || "Failed to duplicate profile");
       }
@@ -128,7 +128,7 @@ export default function ProfilesPage() {
         toast.success(`Profile "${profileToDelete.post_title}" deleted successfully.`);
         setDeleteConfirmOpen(false);
         setProfileToDelete(null);
-        fetchProfiles(search);
+        void fetchProfiles(search);
       } else {
         toast.error(data.error?.message || "Failed to delete profile");
       }

@@ -37,7 +37,7 @@ export class ProfileController {
     try {
       const session = await getServerSession(authOptions);
       const user = session?.user as CurrentUser | undefined;
-      const id = parseInt(params.id, 10);
+      const id = Number.parseInt(params.id, 10);
       const profile = await ProfileService.getProfileById(id, user);
       return successResponse(profile);
     } catch (error) {
@@ -61,7 +61,7 @@ export class ProfileController {
   static async updateProfile(req: NextRequest, { params }: { params: { id: string } }) {
     try {
       const user = await this.getSessionUser();
-      const id = parseInt(params.id, 10);
+      const id = Number.parseInt(params.id, 10);
       const body = await req.json();
       const validatedData = updateProfileSchema.parse(body);
 
@@ -75,7 +75,7 @@ export class ProfileController {
   static async updateStatus(req: NextRequest, { params }: { params: { id: string } }) {
     try {
       const user = await this.getSessionUser();
-      const id = parseInt(params.id, 10);
+      const id = Number.parseInt(params.id, 10);
       const body = await req.json();
       const validatedData = updateStatusSchema.parse(body);
 
@@ -89,7 +89,7 @@ export class ProfileController {
   static async deleteProfile(_req: NextRequest, { params }: { params: { id: string } }) {
     try {
       const user = await this.getSessionUser();
-      const id = parseInt(params.id, 10);
+      const id = Number.parseInt(params.id, 10);
       const result = await ProfileService.deleteProfile(id, user);
       return successResponse(result);
     } catch (error) {
