@@ -16,8 +16,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    /* Brand Primary (Zymr Enterprise Blue) */
-    --primary: 221.2 83.2% 53.3%;
+    /* Brand Primary (Zymr Corporate Blue #0052CC) */
+    --primary: 216 100% 45%;
     --primary-foreground: 210 40% 98%;
 
     /* Secondary / Subdued */
@@ -29,8 +29,8 @@
     --muted-foreground: 215.4 16.3% 46.9%;
 
     /* Accents */
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 216 100% 95%;
+    --accent-foreground: 216 100% 35%;
 
     /* Destructive */
     --destructive: 0 84.2% 60.2%;
@@ -39,7 +39,7 @@
     /* Borders & Inputs */
     --border: 214.3 31.8% 89%;
     --input: 214.3 31.8% 89%;
-    --ring: 221.2 83.2% 53.3%;
+    --ring: 216 100% 45%;
 
     /* Border Radius Token */
     --radius: 0.625rem;
@@ -62,8 +62,8 @@
     --popover: 224 71.4% 6.5%;
     --popover-foreground: 210 20% 98%;
 
-    /* Brand Primary (Slightly brighter in dark mode for contrast) */
-    --primary: 217.2 91.2% 59.8%;
+    /* Brand Primary (Zymr Corporate Blue in Dark Mode - High Contrast Vivid Blue) */
+    --primary: 216 95% 62%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
     /* Secondary / Subdued */
@@ -75,7 +75,7 @@
     --muted-foreground: 215 20.2% 65.1%;
 
     /* Accents */
-    --accent: 217.2 32.6% 14%;
+    --accent: 216 50% 20%;
     --accent-foreground: 210 20% 98%;
 
     /* Destructive */

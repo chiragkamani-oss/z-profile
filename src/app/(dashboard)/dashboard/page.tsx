@@ -226,7 +226,7 @@ export default function DashboardPage() {
 
       {/* Visual Status Breakdown & Top Skills */}
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Status Distribution Progress Chart */}
+        {/* Status Distribution Donut & Progress Chart */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between text-base font-bold">
@@ -236,64 +236,157 @@ export default function DashboardPage() {
               </Badge>
             </CardTitle>
             <CardDescription>
-              Proportion of talent profiles across drafting, review, and client-ready
-              status.
+              Visual proportion of talent profiles across drafting, review, and
+              client-ready status.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Visual Multi-segment Progress Bar */}
-            <div className="flex h-3 w-full overflow-hidden rounded-full bg-muted">
-              <div
-                style={{ width: `${readyPct}%` }}
-                className="bg-emerald-500 transition-all duration-500"
-                title={`Approved: ${readyPct}%`}
-              />
-              <div
-                style={{ width: `${inReviewPct}%` }}
-                className="bg-amber-500 transition-all duration-500"
-                title={`In Review: ${inReviewPct}%`}
-              />
-              <div
-                style={{ width: `${changesPct}%` }}
-                className="bg-red-500 transition-all duration-500"
-                title={`Changes: ${changesPct}%`}
-              />
-              <div
-                style={{ width: `${draftPct}%` }}
-                className="bg-blue-400 transition-all duration-500"
-                title={`Draft: ${draftPct}%`}
-              />
+          <CardContent className="space-y-6">
+            {/* Visual SVG Donut Chart + Central Metric */}
+            <div className="flex flex-col items-center justify-center gap-6 sm:flex-row">
+              <div className="relative flex h-36 w-36 shrink-0 items-center justify-center">
+                <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
+                  {/* Background Track */}
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    fill="transparent"
+                    stroke="currentColor"
+                    strokeWidth="14"
+                    className="text-muted/30"
+                  />
+                  {/* Ready Segment (Emerald) */}
+                  {readyPct > 0 && (
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      fill="transparent"
+                      stroke="#10b981"
+                      strokeWidth="14"
+                      strokeDasharray={`${(readyPct / 100) * 251.2} 251.2`}
+                      strokeDashoffset="0"
+                      className="transition-all duration-700 hover:opacity-80"
+                    />
+                  )}
+                  {/* In Review Segment (Amber) */}
+                  {inReviewPct > 0 && (
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      fill="transparent"
+                      stroke="#f59e0b"
+                      strokeWidth="14"
+                      strokeDasharray={`${(inReviewPct / 100) * 251.2} 251.2`}
+                      strokeDashoffset={`-${(readyPct / 100) * 251.2}`}
+                      className="transition-all duration-700 hover:opacity-80"
+                    />
+                  )}
+                  {/* Needs Changes (Red) */}
+                  {changesPct > 0 && (
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      fill="transparent"
+                      stroke="#ef4444"
+                      strokeWidth="14"
+                      strokeDasharray={`${(changesPct / 100) * 251.2} 251.2`}
+                      strokeDashoffset={`-${((readyPct + inReviewPct) / 100) * 251.2}`}
+                      className="transition-all duration-700 hover:opacity-80"
+                    />
+                  )}
+                  {/* Draft Segment (Blue) */}
+                  {draftPct > 0 && (
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      fill="transparent"
+                      stroke="#3b82f6"
+                      strokeWidth="14"
+                      strokeDasharray={`${(draftPct / 100) * 251.2} 251.2`}
+                      strokeDashoffset={`-${((readyPct + inReviewPct + changesPct) / 100) * 251.2}`}
+                      className="transition-all duration-700 hover:opacity-80"
+                    />
+                  )}
+                </svg>
+                {/* Donut Center Count */}
+                <div className="absolute flex flex-col items-center justify-center text-center">
+                  <span className="text-xl font-bold tracking-tight text-foreground">
+                    {data?.totalProfiles ?? 0}
+                  </span>
+                  <span className="text-[10px] font-semibold uppercase text-muted-foreground">
+                    Profiles
+                  </span>
+                </div>
+              </div>
+
+              {/* Legend & Count Details */}
+              <div className="grid w-full grid-cols-1 gap-2.5 text-xs">
+                <div className="flex items-center justify-between rounded-md border border-border/50 bg-muted/20 px-3 py-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                    <span className="text-muted-foreground">Approved / Ready:</span>
+                  </div>
+                  <span className="font-bold text-foreground">
+                    {data?.readyCount ?? 0} ({readyPct}%)
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-md border border-border/50 bg-muted/20 px-3 py-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+                    <span className="text-muted-foreground">In Review:</span>
+                  </div>
+                  <span className="font-bold text-foreground">
+                    {data?.inReviewCount ?? 0} ({inReviewPct}%)
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-md border border-border/50 bg-muted/20 px-3 py-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
+                    <span className="text-muted-foreground">Needs Changes:</span>
+                  </div>
+                  <span className="font-bold text-foreground">
+                    {data?.reviewChangesCount ?? 0} ({changesPct}%)
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-md border border-border/50 bg-muted/20 px-3 py-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
+                    <span className="text-muted-foreground">Drafts:</span>
+                  </div>
+                  <span className="font-bold text-foreground">
+                    {data?.draftCount ?? 0} ({draftPct}%)
+                  </span>
+                </div>
+              </div>
             </div>
 
-            {/* Legend & Count Details */}
-            <div className="grid grid-cols-2 gap-3 pt-2 text-xs">
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                <span className="text-muted-foreground">Approved / Ready:</span>
-                <span className="font-bold">
-                  {data?.readyCount ?? 0} ({readyPct}%)
-                </span>
+            {/* Horizontal Bar Visualizer */}
+            <div className="space-y-1.5 border-t border-border/60 pt-2">
+              <div className="flex justify-between text-xs font-medium text-muted-foreground">
+                <span>Dossier Readiness Velocity</span>
+                <span>{readyPct}% Client Ready</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
-                <span className="text-muted-foreground">In Review:</span>
-                <span className="font-bold">
-                  {data?.inReviewCount ?? 0} ({inReviewPct}%)
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
-                <span className="text-muted-foreground">Needs Changes:</span>
-                <span className="font-bold">
-                  {data?.reviewChangesCount ?? 0} ({changesPct}%)
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-blue-400" />
-                <span className="text-muted-foreground">Drafts:</span>
-                <span className="font-bold">
-                  {data?.draftCount ?? 0} ({draftPct}%)
-                </span>
+              <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  style={{ width: `${readyPct}%` }}
+                  className="bg-emerald-500 transition-all duration-500"
+                />
+                <div
+                  style={{ width: `${inReviewPct}%` }}
+                  className="bg-amber-500 transition-all duration-500"
+                />
+                <div
+                  style={{ width: `${changesPct}%` }}
+                  className="bg-red-500 transition-all duration-500"
+                />
+                <div
+                  style={{ width: `${draftPct}%` }}
+                  className="bg-blue-500 transition-all duration-500"
+                />
               </div>
             </div>
           </CardContent>
